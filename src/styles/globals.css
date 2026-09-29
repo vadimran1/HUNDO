@@ -1,0 +1,141 @@
+@import "tailwindcss";
+@import "@fontsource-variable/unbounded";
+@import "@fontsource-variable/onest";
+@import "@fontsource-variable/jetbrains-mono";
+
+/* Тёмная тема: явный выбор (data-theme="dark") или системная, если светлая не выбрана вручную */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) { @slot; }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) { @slot; }
+  }
+}
+
+/* Стиль: монохромный минимализм («швейцарский»), один акцент на выбор пользователя. */
+:root {
+  --bg: #fafafa; --bg-2: #f0f0f0; --bg-3: #e7e7e7;
+  --fg: #0b0b0b; --fg-2: #4a4a4a; --fg-3: #8a8a8a;
+  --line: #e2e2e2; --line-2: #cdcdcd;
+  --wm-low: #5c5c5c;
+  --accent: var(--fg); --on-accent: var(--bg);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0a0a; --bg-2: #141414; --bg-3: #1d1d1d;
+    --fg: #f3f3f3; --fg-2: #b0b0b0; --fg-3: #6e6e6e;
+    --line: #222; --line-2: #343434;
+    --wm-low: #8d8d8d;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0a0a0a; --bg-2: #141414; --bg-3: #1d1d1d;
+  --fg: #f3f3f3; --fg-2: #b0b0b0; --fg-3: #6e6e6e;
+  --line: #222; --line-2: #343434;
+  --wm-low: #8d8d8d;
+  color-scheme: dark;
+}
+:root[data-accent="blue"]   { --accent: #3d5afe; --on-accent: #ffffff; }
+:root[data-accent="red"]    { --accent: #ff3b30; --on-accent: #ffffff; }
+:root[data-accent="orange"] { --accent: #ff7a1a; --on-accent: #0b0b0b; }
+:root[data-accent="green"]  { --accent: #1fc77e; --on-accent: #0b0b0b; }
+:root[data-accent="violet"] { --accent: #8b5cf6; --on-accent: #ffffff; }
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --font-display: "Unbounded Variable", "Arial Black", system-ui, sans-serif;
+  --font-sans: "Onest Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ease-out-soft: cubic-bezier(.2, .8, .2, 1);
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+}
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: var(--font-sans); font-size: 15px; line-height: 1.5;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  button, [role="button"] { cursor: pointer; }
+  button:disabled { cursor: not-allowed; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  ::selection { background: var(--accent); color: var(--on-accent); }
+  h1, h2, h3 { text-wrap: balance; }
+  input, select, textarea { font: inherit; color: inherit; }
+}
+
+@layer components {
+  .field {
+    width: 100%; min-width: 0; padding: 12px 13px; border-radius: 10px;
+    background: var(--bg-2); border: 1px solid var(--line);
+    transition: border-color .2s, background-color .2s;
+  }
+  .field:focus { outline: none; border-color: var(--accent); background: var(--bg); }
+
+  /* поле ответа в клеточку — как бланк ответов №1 */
+  .cells {
+    --cell: 30px;
+    width: 100%; min-width: 0;
+    font-family: var(--font-mono); font-size: 19px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: calc(var(--cell) - 1ch);
+    padding: 12px 0 12px calc((var(--cell) - 1ch) / 2);
+    background-color: var(--bg);
+    background-image: repeating-linear-gradient(90deg, transparent 0 calc(var(--cell) - 1px), var(--line-2) calc(var(--cell) - 1px) var(--cell));
+    border: 1px solid var(--line-2); border-radius: 6px;
+    transition: border-color .2s;
+  }
+  .cells:focus { outline: none; border-color: var(--accent); }
+  .cells:disabled { color: var(--fg); opacity: 1; }
+  .cells::placeholder { letter-spacing: .02em; text-transform: none; font-size: 13px; font-family: var(--font-sans); color: var(--fg-3); }
+
+  .label-mono { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3); }
+
+  .hatch { background: repeating-linear-gradient(-45deg, var(--bg-2) 0 8px, var(--bg) 8px 16px); }
+
+  .link-u { font-weight: 600; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+
+  .typing { display: inline-flex; gap: 5px; padding: 4px 0; }
+  .typing i { width: 7px; height: 7px; background: var(--fg-3); animation: typing 1s cubic-bezier(.2,.8,.2,1) infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; }
+  .typing i:nth-child(3) { animation-delay: .3s; }
+
+  .scroll-x { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; }
+  .scroll-x::-webkit-scrollbar { display: none; }
+
+  /* векторный логотип */
+  .wm svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .wm-solid, .wm-line { font-family: var(--font-display); font-weight: 900; letter-spacing: -.02em; }
+  .wm-line { fill: none; stroke: var(--fg); }
+  .wm-h { fill: var(--bg); stroke: var(--accent); }
+  .wm-h.a { fill: var(--accent); }
+  .wm-l { stroke: var(--accent); }
+  .wm-ro { font-family: var(--font-mono); fill: var(--accent); paint-order: stroke; stroke: var(--bg); font-weight: 500; }
+  .wm-grid { stroke: var(--line-2); }
+}
+
+@keyframes typing { 0%,100% { transform: translateY(0); opacity: .4 } 40% { transform: translateY(-4px); opacity: 1; background: var(--accent) } }
+@keyframes blink { 50% { opacity: .2 } }
+@keyframes scan { from { left: -30% } to { left: 100% } }
+@keyframes marquee { from { transform: translateX(0) } to { transform: translateX(calc(-100% - var(--gap))) } }
+@keyframes marquee-vertical { from { transform: translateY(0) } to { transform: translateY(calc(-100% - var(--gap))) } }
+
+/* переход при смене темы и цвета — круг от места нажатия */
+:root[data-vt="reveal"]::view-transition-old(root),
+:root[data-vt="reveal"]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+:root[data-vt="reveal"]::view-transition-new(root) { z-index: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

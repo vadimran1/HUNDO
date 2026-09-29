@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Сотка</title>
+    <meta name="description" content="Сотка — ИИ-репетитор для подготовки к ЕГЭ и ОГЭ" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Сотка" />
+    <script>
+      // тема и акцент до первой отрисовки — без вспышки светлого экрана
+      try {
+        var s = (JSON.parse(localStorage.getItem("sotka") || "{}").state) || {};
+        if (s.theme) document.documentElement.setAttribute("data-theme", s.theme);
+        if (s.accent && s.accent !== "mono") document.documentElement.setAttribute("data-accent", s.accent);
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/app/main.tsx"></script>
+  </body>
+</html>

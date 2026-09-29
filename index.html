@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Сотка — ИИ-репетитор для ЕГЭ и ОГЭ</title>
+    <meta name="description" content="Варианты в формате ФИПИ, проверка ответов и разбор каждой ошибки. Бесплатно, прямо в телефоне." />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Сотка" />
+    <meta property="og:title" content="Сотка — ИИ-репетитор для ЕГЭ и ОГЭ" />
+    <meta property="og:description" content="Варианты в формате ФИПИ, проверка ответов и разбор каждой ошибки." />
+    <meta property="og:image" content="/icons/icon-512.png" />
+    <script>
+      try {
+        var s = (JSON.parse(localStorage.getItem("sotka") || "{}").state) || {};
+        if (s.theme) document.documentElement.setAttribute("data-theme", s.theme);
+        if (s.accent && s.accent !== "mono") document.documentElement.setAttribute("data-accent", s.accent);
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/landing/main.tsx"></script>
+  </body>
+</html>
