@@ -1,4 +1,4 @@
-// Компонент AnimatedGridPattern из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под «Сотку».
+// Компонент AnimatedGridPattern из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под HUNDO.
 "use client"
 
 import {

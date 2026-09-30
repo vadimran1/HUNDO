@@ -150,7 +150,7 @@ function AboutSheet() {
   const [share, setShare] = useState("");
   const onShare = async () => {
     const url = location.origin + "/";
-    if (navigator.share) { try { await navigator.share({ title: "Сотка", text: "ИИ-помощник для подготовки к ЕГЭ и ОГЭ", url }); return; } catch (e) { if ((e as Error).name === "AbortError") return; } }
+    if (navigator.share) { try { await navigator.share({ title: "HUNDO", text: "ИИ-помощник для подготовки к ЕГЭ и ОГЭ", url }); return; } catch (e) { if ((e as Error).name === "AbortError") return; } }
     try { await navigator.clipboard.writeText(url); setShare("Ссылка скопирована: " + url); } catch { setShare(url); }
   };
   const features: [string, string][] = [
@@ -178,8 +178,11 @@ function AboutSheet() {
       <Button className="w-full" onClick={onShare}>Поделиться ссылкой на установку <ArrowRight /></Button>
       {share && <p className="mt-2 text-[12.5px] text-fg-3">{share}</p>}
 
+      <Section>Название</Section>
+      <p className="m-0"><b>HUNDO</b> — «сотка» на английском сленге, то есть 100 баллов. Цель, к которой приложение ведёт ученика.</p>
+
       <Section>Зачем</Section>
-      <p className="m-0">Готовиться к экзамену одному трудно: задания есть в банке ФИПИ и на «Сдам ГИА», но никто не объясняет, почему ответ неверный. Репетитор стоит дорого. «Сотка» даёт ученику репетитора в телефоне: он составляет варианты, проверяет ответы, разбирает каждую ошибку и следит за слабыми темами.</p>
+      <p className="m-0">Готовиться к экзамену одному трудно: задания есть в банке ФИПИ и на «Сдам ГИА», но никто не объясняет, почему ответ неверный. Репетитор стоит дорого. HUNDO даёт ученику репетитора в телефоне: он составляет варианты, проверяет ответы, разбирает каждую ошибку и следит за слабыми темами.</p>
 
       <Section>Что умеет</Section>
       {features.map(([t, s]) => (

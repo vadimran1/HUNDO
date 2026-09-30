@@ -1,4 +1,6 @@
-# Сотка — ИИ-помощник по ЕГЭ и ОГЭ
+# HUNDO — ИИ-помощник по ЕГЭ и ОГЭ
+
+**HUNDO** — «сотка» на английском сленге, то есть 100 баллов.
 
 Школьный проект: приложение для подготовки к ЕГЭ и ОГЭ с ИИ-репетитором. Ставится на iPhone и Android с сайта, без App Store и Google Play (PWA).
 
@@ -25,22 +27,22 @@
 2. Откройте **Keys** → **Create Key** и скопируйте ключ (начинается с `sk-or-v1-`).
 
 ### 2. Репозиторий на GitHub
-1. На [github.com](https://github.com) нажмите **New repository**, например `sotka`. Можно сделать приватным.
+1. На [github.com](https://github.com) нажмите **New repository**, например `hundo`. Можно сделать приватным.
 2. Загрузите файлы проекта одним из способов:
    - **Через сайт:** «uploading an existing file», перетащите все файлы и папки, **кроме `node_modules` и `dist`**.
    - **Через git** (в архиве уже есть первый коммит):
      ```bash
-     git remote add origin https://github.com/ВАШ-ЛОГИН/sotka.git
+     git remote add origin https://github.com/ВАШ-ЛОГИН/hundo.git
      git push -u origin main
      ```
 
 ### 3. Проект на Vercel
 1. Зайдите на [vercel.com](https://vercel.com) через аккаунт GitHub.
-2. **Add New → Project** → выберите репозиторий `sotka` → **Import**.
+2. **Add New → Project** → выберите репозиторий `hundo` → **Import**.
 3. Framework определится сам (Vite). Ничего не меняйте.
 4. Откройте **Environment Variables** и добавьте:
    - `OPENROUTER_API_KEY` = ваш ключ.
-5. Нажмите **Deploy**. Через минуту сайт будет по адресу вида `sotka-xxx.vercel.app`.
+5. Нажмите **Deploy**. Через минуту сайт будет по адресу вида `hundo-xxx.vercel.app`.
 
 Дополнительные переменные (по желанию):
 

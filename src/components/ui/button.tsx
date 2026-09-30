@@ -1,4 +1,4 @@
-// Кнопка по образцу shadcn/ui (MIT), цвета — из токенов «Сотки».
+// Кнопка по образцу shadcn/ui (MIT), цвета — из токенов HUNDO.
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";

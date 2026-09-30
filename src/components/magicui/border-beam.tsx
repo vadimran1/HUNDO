@@ -1,4 +1,4 @@
-// Компонент BorderBeam из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под «Сотку».
+// Компонент BorderBeam из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под HUNDO.
 "use client"
 
 import { motion, type MotionStyle, type Transition } from "motion/react"

@@ -1,4 +1,4 @@
-// Компонент NumberTicker из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под «Сотку».
+// Компонент NumberTicker из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под HUNDO.
 "use client"
 
 import { useEffect, useRef, type ComponentPropsWithoutRef } from "react"

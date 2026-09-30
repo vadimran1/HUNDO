@@ -21,7 +21,7 @@ export function TopBar() {
     <header className="sticky top-[env(safe-area-inset-top,0px)] z-30 border-b border-line bg-bg/85 backdrop-blur-md">
       <div className="mx-auto flex max-w-[560px] items-center gap-2.5 px-4 py-2.5">
         <p className="m-0 flex items-center gap-2 font-display text-[15px] font-black tracking-[.06em]">
-          <i className="inline-block size-2 bg-accent transition-colors duration-500" />СОТКА
+          <i className="inline-block size-2 bg-accent transition-colors duration-500" />HUNDO
         </p>
         <span className="rounded border border-line-2 px-1.5 py-0.5 font-mono text-[10.5px] tracking-[.08em] text-fg-3">{exam}</span>
         <span className="flex-1" />

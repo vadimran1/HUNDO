@@ -1,4 +1,4 @@
-// Компонент BlurFade из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под «Сотку».
+// Компонент BlurFade из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под HUNDO.
 "use client"
 
 import { useRef } from "react"

@@ -37,7 +37,7 @@ export function Landing() {
     <MotionConfig reducedMotion="user">
       <header className="sticky top-[env(safe-area-inset-top,0px)] z-30 border-b border-line bg-bg/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1080px] items-center gap-3 px-4 py-3">
-          <p className="m-0 flex items-center gap-2 font-display text-[15px] font-black tracking-[.06em]"><i className="inline-block size-2 bg-accent" />СОТКА</p>
+          <p className="m-0 flex items-center gap-2 font-display text-[15px] font-black tracking-[.06em]"><i className="inline-block size-2 bg-accent" />HUNDO</p>
           <span className="flex-1" />
           <a href={APP_URL} className="text-sm font-semibold text-fg-2 hover:text-fg">Открыть приложение</a>
         </div>
@@ -131,7 +131,7 @@ export function Landing() {
 
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-[1080px] flex-wrap justify-between gap-3 px-4 py-6 font-mono text-[11.5px] text-fg-3">
-          <span>Сотка · школьный проект · задания: ФИПИ, Сдам ГИА</span>
+          <span>HUNDO · школьный проект · задания: ФИПИ, Сдам ГИА</span>
           <span>сборка {BUILD.version}{BUILD.date ? " · " + BUILD.date : ""}</span>
         </div>
       </footer>
@@ -148,13 +148,13 @@ const STEPS: Record<Platform, React.ReactNode[]> = {
     <>Откройте этот сайт в <b>Safari</b> (или в Chrome на iOS 16.4+)</>,
     <>Нажмите <b className="inline-flex items-center gap-1">«Поделиться» <Share className="size-4" /></b> внизу экрана</>,
     <>Выберите <b className="inline-flex items-center gap-1">«На экран „Домой“» <SquarePlus className="size-4" /></b></>,
-    <>Нажмите <b>«Добавить»</b> — иконка «Сотки» появится рядом с другими приложениями</>,
+    <>Нажмите <b>«Добавить»</b> — иконка HUNDO появится рядом с другими приложениями</>,
   ],
   android: [
     <>Откройте этот сайт в <b>Chrome</b> или Яндекс Браузере</>,
     <>Нажмите кнопку <b>«Установить приложение»</b> выше или меню <b className="inline-flex items-center gap-0.5"><EllipsisVertical className="size-4" /></b> → «Установить приложение»</>,
     <>В других браузерах пункт называется <b>«Добавить на главный экран»</b></>,
-    <>Иконка «Сотки» появится на главном экране — открывайте как обычное приложение</>,
+    <>Иконка HUNDO появится на главном экране — открывайте как обычное приложение</>,
   ],
   desktop: [
     <>Откройте сайт в <b>Chrome</b>, <b>Edge</b> или Яндекс Браузере</>,

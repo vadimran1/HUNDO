@@ -78,8 +78,8 @@ export default {
         headers:{
           "content-type":"application/json",
           "authorization":"Bearer " + KEY,
-          "http-referer":"https://" + (req.headers.get("host") || "sotka.vercel.app"),
-          "x-title":"Sotka",
+          "http-referer":"https://" + (req.headers.get("host") || "hundo.vercel.app"),
+          "x-title":"HUNDO",
         },
         body:JSON.stringify({model:MODEL, stream:true, temperature, max_tokens:MAX_TOKENS, messages}),
       });

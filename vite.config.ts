@@ -35,8 +35,8 @@ export default defineConfig({
       includeAssets: ["icons/*.png"],
       manifest: {
         id: "/app/",
-        name: "Сотка — ИИ-помощник по ЕГЭ и ОГЭ",
-        short_name: "Сотка",
+        name: "HUNDO — ИИ-помощник по ЕГЭ и ОГЭ",
+        short_name: "HUNDO",
         description: "ИИ-репетитор для подготовки к ЕГЭ и ОГЭ: варианты в формате ФИПИ, проверка ответов, разбор ошибок",
         lang: "ru",
         start_url: "/app/",

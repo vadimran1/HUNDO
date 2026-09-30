@@ -1,4 +1,4 @@
-// Компонент Iphone из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под «Сотку».
+// Компонент Iphone из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под HUNDO.
 import { useId, type HTMLAttributes } from "react"
 
 const PHONE_WIDTH = 433

@@ -1,6 +1,6 @@
 import type { SubjectId } from "./tasks";
 
-export const APP_NAME = "СОТКА";          // название на логотипе — меняется здесь
+export const APP_NAME = "HUNDO";          // название на логотипе — меняется здесь
 export const APP_VERSION = "3.0";
 
 declare const __BUILD__: { version: string; date: string; message: string };
@@ -31,7 +31,7 @@ export type AccentId = (typeof ACCENTS)[number]["id"];
 
 export type Provider = "server" | "openrouter" | "openai" | "custom";
 export const PRESETS: Record<Provider, { label: string; base: string; model: string }> = {
-  server: { label: "Сервер Сотки — без ключа", base: "/api", model: "" },
+  server: { label: "Сервер HUNDO — без ключа", base: "/api", model: "" },
   openrouter: { label: "OpenRouter — свой ключ", base: "https://openrouter.ai/api/v1", model: "openrouter/free" },
   openai: { label: "OpenAI — свой ключ", base: "https://api.openai.com/v1", model: "gpt-4o-mini" },
   custom: { label: "Свой адрес", base: "", model: "" },

@@ -1,4 +1,4 @@
-// Компонент Marquee из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под «Сотку».
+// Компонент Marquee из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под HUNDO.
 import { type ComponentPropsWithoutRef } from "react"
 
 import { cn } from "@/lib/utils"
