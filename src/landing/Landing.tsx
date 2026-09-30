@@ -45,15 +45,15 @@ export function Landing() {
 
       {/* Герой: логотип, ценность, кнопка установки под платформу, телефон со скриншотом */}
       <section className="relative overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-50 [mask-image:linear-gradient(to_bottom,#000_60%,transparent)]">
+        <div aria-hidden className="pointer-events-none absolute inset-0 z-0 opacity-50 [mask-image:linear-gradient(to_bottom,#000_60%,transparent)]">
           <FallingBooks density={0.8} />
         </div>
-        <div className="relative mx-auto grid max-w-[1080px] items-center gap-10 px-4 pt-10 pb-12 md:grid-cols-[1.15fr_.85fr] md:pt-20 md:pb-20">
+        <div className="relative z-10 mx-auto grid max-w-[1080px] items-center gap-10 px-4 pt-10 pb-12 md:grid-cols-[1.15fr_.85fr] md:pt-20 md:pb-20">
           <div>
             <BlurFade delay={0.05} duration={0.6}><Wordmark text={APP_NAME} className="max-w-[560px]" /></BlurFade>
             <BlurFade delay={0.2}>
-              <h1 className="mt-6 max-w-[20ch] [text-shadow:0_0_8px_var(--bg),0_0_3px_var(--bg)] text-[clamp(24px,6vw,40px)] leading-[1.12] font-semibold tracking-[-.02em]">ИИ-репетитор для подготовки к ЕГЭ и ОГЭ</h1>
-              <p className="mt-3 max-w-[46ch] text-[16px] text-fg-2 [text-shadow:0_0_6px_var(--bg),0_0_2px_var(--bg)]">Варианты в формате ФИПИ, проверка ответов и разбор каждой ошибки. Бесплатно, прямо в телефоне, без магазина приложений.</p>
+              <h1 className="mt-6 max-w-[20ch] text-[clamp(24px,6vw,40px)] leading-[1.12] font-semibold tracking-[-.02em]">ИИ-репетитор для подготовки к ЕГЭ и ОГЭ</h1>
+              <p className="mt-3 max-w-[46ch] text-[16px] text-fg-2">Варианты в формате ФИПИ, проверка ответов и разбор каждой ошибки. Бесплатно, прямо в телефоне, без магазина приложений.</p>
             </BlurFade>
             <BlurFade delay={0.32} className="mt-7"><InstallCta platform={detected} onSteps={scrollToSteps} /></BlurFade>
           </div>
@@ -141,7 +141,7 @@ export function Landing() {
 }
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
-  return <p className="flex items-center gap-2.5 font-mono text-[11px] tracking-[.12em] text-fg-3 uppercase"><i className="size-1.5 bg-accent" />{children}</p>;
+  return <p className="flex items-center gap-2.5 font-mono text-[12px] tracking-[.12em] text-fg-3 uppercase"><i className="size-1.5 bg-accent" />{children}</p>;
 }
 
 const STEPS: Record<Platform, React.ReactNode[]> = {

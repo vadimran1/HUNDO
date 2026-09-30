@@ -30,7 +30,7 @@ export function StatsScreen() {
 
   return (
     <div className="pt-5">
-      <div className="mb-3.5 flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-[.08em] text-fg-3 uppercase">
+      <div className="mb-3.5 flex flex-wrap items-center gap-2 font-mono text-[12px] tracking-[.08em] text-fg-3 uppercase">
         <b className="font-bold text-fg">Прогресс</b><span className="h-px w-3.5 bg-line-2" />
         <span>{exam} · {streak.days} {plural(streak.days, "день", "дня", "дней")} подряд</span>
       </div>

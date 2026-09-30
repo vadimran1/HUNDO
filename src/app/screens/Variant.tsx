@@ -124,7 +124,7 @@ function Setup() {
 
 function Meta({ items }: { items: string[] }) {
   return (
-    <div className="mb-3.5 flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-[.08em] text-fg-3 uppercase">
+    <div className="mb-3.5 flex flex-wrap items-center gap-2 font-mono text-[12px] tracking-[.08em] text-fg-3 uppercase">
       <b className="font-bold text-fg">{items[0]}</b>
       {items.slice(1).map(x => <span key={x} className="flex items-center gap-2"><span className="h-px w-3.5 bg-line-2" />{x}</span>)}
     </div>
@@ -206,8 +206,8 @@ function Solve({ v }: { v: Variant }) {
           initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 6) * 0.05 }}>
           <div className="mb-2.5 flex items-center gap-2.5">
             <span className="min-w-[34px] font-display text-[22px] font-black tracking-[-.03em]">{String(t.n).padStart(2, "0")}</span>
-            <span className="min-w-0 flex-1 font-mono text-[10.5px] tracking-[.08em] text-fg-3 uppercase">{t.topic}</span>
-            {t.type === "open" && <span className="flex-none rounded-[5px] border border-accent px-[7px] py-[3px] font-mono text-[10.5px] tracking-[.06em] uppercase">часть 2 · {t.max} б.</span>}
+            <span className="min-w-0 flex-1 font-mono text-[11.5px] tracking-[.08em] text-fg-3 uppercase">{t.topic}</span>
+            {t.type === "open" && <span className="flex-none rounded-[5px] border border-accent px-[7px] py-[3px] font-mono text-[11.5px] tracking-[.06em] uppercase">часть 2 · {t.max} б.</span>}
           </div>
           <p className="mb-3.5 text-base leading-[1.55] break-words whitespace-pre-wrap">{t.q}</p>
           {t.type === "open"

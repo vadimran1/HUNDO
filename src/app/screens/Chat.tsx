@@ -62,7 +62,7 @@ export function ChatScreen() {
       <AnimatePresence>
         {!chat.length && !live && (
           <motion.div exit={{ opacity: 0, y: -8 }} className="pt-7 pb-2">
-            <div className="mb-3.5 flex items-center gap-2 font-mono text-[11px] tracking-[.08em] text-fg-3 uppercase">
+            <div className="mb-3.5 flex items-center gap-2 font-mono text-[12px] tracking-[.08em] text-fg-3 uppercase">
               <b className="font-bold text-fg">ИИ-репетитор</b><span className="h-px w-3.5 bg-line-2" /><span>{ready ? "подключён" : "не подключён"}</span>
             </div>
             <h2 className="mb-1.5 font-display text-2xl font-bold tracking-[-.02em]">Спросите что угодно по подготовке</h2>

@@ -87,7 +87,7 @@ function SettingsSheet() {
           </motion.button>
         ))}
       </div>
-      <p className="mt-2 font-mono text-[11px] text-fg-3">{ACCENTS.find(a => a.id === app.accent)?.name}</p>
+      <p className="mt-2 font-mono text-[12px] text-fg-3">{ACCENTS.find(a => a.id === app.accent)?.name}</p>
 
       <Section>Экзамен</Section>
       <Segmented id="exam" value={exam} items={[["ЕГЭ", "ЕГЭ · 11 класс"], ["ОГЭ", "ОГЭ · 9 класс"]]} onChange={v => setExam(v)} />
@@ -172,7 +172,7 @@ function AboutSheet() {
   return (
     <div className="pb-2">
       <Wordmark text={APP_NAME} className="mt-2 mb-1" />
-      <div className="mt-1.5 mb-4 flex justify-between gap-2.5 font-mono text-[10.5px] tracking-[.1em] text-fg-3 uppercase">
+      <div className="mt-1.5 mb-4 flex justify-between gap-2.5 font-mono text-[11.5px] tracking-[.1em] text-fg-3 uppercase">
         <span>ИИ-помощник по ЕГЭ и ОГЭ</span><span>v{APP_VERSION}{BUILD.version.startsWith("local") ? "" : " · " + BUILD.version}</span>
       </div>
       <Button className="w-full" onClick={onShare}>Поделиться ссылкой на установку <ArrowRight /></Button>
@@ -191,7 +191,7 @@ function AboutSheet() {
 
       <Section>Как устроено</Section>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[13.5px]">
-        {tech.map(([t, d]) => <Fragment key={t}><dt className="pt-0.5 font-mono text-[11px] tracking-[.06em] text-fg-3 uppercase">{t}</dt><dd className="m-0">{d}</dd></Fragment>)}
+        {tech.map(([t, d]) => <Fragment key={t}><dt className="pt-0.5 font-mono text-[12px] tracking-[.06em] text-fg-3 uppercase">{t}</dt><dd className="m-0">{d}</dd></Fragment>)}
       </dl>
 
       <Section>Источники</Section>
@@ -258,7 +258,7 @@ function PlanSheet() {
       {([["Теория и конспект", "2 дня"], ["Задания части 1", "3 дня"], ["Задания части 2", "1 день"], ["Разбор ошибок", "1 день"]] as const).map(([t, b]) => (
         <div key={t} className="flex items-center gap-3 border-t border-line py-3 first-of-type:border-0">
           <span className="flex-1 text-[14.5px] font-medium">{t}</span>
-          <span className="rounded-[5px] border border-line-2 px-[7px] py-[3px] font-mono text-[10.5px] tracking-[.06em] text-fg-2 uppercase">{b}</span>
+          <span className="rounded-[5px] border border-line-2 px-[7px] py-[3px] font-mono text-[11.5px] tracking-[.06em] text-fg-2 uppercase">{b}</span>
         </div>
       ))}
       <Button className="mt-[18px] w-full" disabled={!ready || !!plan?.busy} onClick={gen}>{ready ? <>Персональный план от ИИ <ArrowRight /></> : "ИИ не подключён — см. настройки"}</Button>

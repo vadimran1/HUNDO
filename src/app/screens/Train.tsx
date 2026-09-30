@@ -65,7 +65,7 @@ export function TrainScreen() {
   return (
     <AnimatePresence mode="wait">
       <motion.div key={task.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
-        <div className="mt-5 mb-3.5 flex flex-wrap items-center gap-2 font-mono text-[11px] tracking-[.08em] text-fg-3 uppercase">
+        <div className="mt-5 mb-3.5 flex flex-wrap items-center gap-2 font-mono text-[12px] tracking-[.08em] text-fg-3 uppercase">
           <b className="font-bold text-fg">{SUBJ_NAME[task.subj]}</b>
           <span className="h-px w-3.5 bg-line-2" />
           <span>{task.topic}</span>

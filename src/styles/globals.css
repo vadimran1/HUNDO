@@ -14,25 +14,25 @@
 /* Стиль: монохромный минимализм («швейцарский»), один акцент на выбор пользователя. */
 :root {
   --bg: #fafafa; --bg-2: #f0f0f0; --bg-3: #e7e7e7;
-  --fg: #0b0b0b; --fg-2: #4a4a4a; --fg-3: #8a8a8a;
-  --line: #e2e2e2; --line-2: #cdcdcd;
+  --fg: #0b0b0b; --fg-2: #2e2e2e; --fg-3: #666666;
+  --line: #e0e0e0; --line-2: #c4c4c4;
   --wm-low: #5c5c5c;
   --accent: var(--fg); --on-accent: var(--bg);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0a0a0a; --bg-2: #141414; --bg-3: #1d1d1d;
-    --fg: #f3f3f3; --fg-2: #b0b0b0; --fg-3: #6e6e6e;
-    --line: #222; --line-2: #343434;
+    --bg: #0a0a0a; --bg-2: #161616; --bg-3: #202020;
+    --fg: #f5f5f5; --fg-2: #d4d4d4; --fg-3: #9e9e9e;
+    --line: #262626; --line-2: #3a3a3a;
     --wm-low: #8d8d8d;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0a0a0a; --bg-2: #141414; --bg-3: #1d1d1d;
-  --fg: #f3f3f3; --fg-2: #b0b0b0; --fg-3: #6e6e6e;
-  --line: #222; --line-2: #343434;
+  --bg: #0a0a0a; --bg-2: #161616; --bg-3: #202020;
+  --fg: #f5f5f5; --fg-2: #d4d4d4; --fg-3: #9e9e9e;
+  --line: #262626; --line-2: #3a3a3a;
   --wm-low: #8d8d8d;
   color-scheme: dark;
 }
@@ -65,9 +65,12 @@
   html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
   body {
     margin: 0; background: var(--bg); color: var(--fg);
-    font-family: var(--font-sans); font-size: 15px; line-height: 1.5;
+    font-family: var(--font-sans); font-size: 15px; line-height: 1.5; font-weight: 420;
+    text-rendering: optimizeLegibility;
     padding-top: env(safe-area-inset-top, 0px);
   }
+  :root[data-theme="dark"] body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; } }
   button, [role="button"] { cursor: pointer; }
   button:disabled { cursor: not-allowed; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -100,7 +103,7 @@
   .cells:disabled { color: var(--fg); opacity: 1; }
   .cells::placeholder { letter-spacing: .02em; text-transform: none; font-size: 13px; font-family: var(--font-sans); color: var(--fg-3); }
 
-  .label-mono { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3); }
+  .label-mono { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--fg-3); }
 
   .hatch { background: repeating-linear-gradient(-45deg, var(--bg-2) 0 8px, var(--bg) 8px 16px); }
 

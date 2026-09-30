@@ -23,7 +23,7 @@ export function TopBar() {
         <p className="m-0 flex items-center gap-2 font-display text-[15px] font-black tracking-[.06em]">
           <i className="inline-block size-2 bg-accent transition-colors duration-500" />HUNDO
         </p>
-        <span className="rounded border border-line-2 px-1.5 py-0.5 font-mono text-[10.5px] tracking-[.08em] text-fg-3">{exam}</span>
+        <span className="rounded border border-line-2 px-1.5 py-0.5 font-mono text-[11.5px] tracking-[.08em] text-fg-3">{exam}</span>
         <span className="flex-1" />
         <Button variant="outline" size="icon" aria-label="Настройки" onClick={() => openSheet("settings")} className="size-[38px] border-line text-fg-2">
           <SlidersHorizontal className="size-[18px]" />
@@ -43,7 +43,7 @@ export function TabBar() {
           const on = id === tab;
           return (
             <button key={id} role="tab" aria-selected={on} onClick={() => go(id)}
-              className={cn("relative flex flex-col items-center gap-1 px-0.5 pt-2.5 pb-[11px] text-[10.5px] font-semibold transition-colors", on ? "text-fg" : "text-fg-3")}>
+              className={cn("relative flex flex-col items-center gap-1 px-0.5 pt-2.5 pb-[11px] text-[11.5px] font-semibold transition-colors", on ? "text-fg" : "text-fg-3")}>
               {on && <motion.span layoutId="tab-ind" className="absolute -top-px h-0.5 w-[26px] bg-accent" transition={{ type: "spring", stiffness: 520, damping: 34 }} />}
               <motion.span animate={{ y: on ? -1 : 0, scale: on ? 1.08 : 1 }} whileTap={{ scale: 0.85 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
                 <Icon className="size-[21px]" strokeWidth={1.8} />

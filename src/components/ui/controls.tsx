@@ -70,7 +70,7 @@ export function Label({ children, className }: { children: React.ReactNode; clas
 
 export function Section({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-[30px] mb-3 flex items-center gap-2.5 font-mono text-[11px] font-medium tracking-[.12em] text-fg-3 uppercase after:h-px after:flex-1 after:bg-line">
+    <div className="mt-[30px] mb-3 flex items-center gap-2.5 font-mono text-[12px] font-medium tracking-[.12em] text-fg-3 uppercase after:h-px after:flex-1 after:bg-line">
       {children}
     </div>
   );
