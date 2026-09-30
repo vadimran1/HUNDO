@@ -9,7 +9,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { Iphone } from "@/components/magicui/iphone";
 import { BlurFade } from "@/components/magicui/blur-fade";
 import { Marquee } from "@/components/magicui/marquee";
-import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
+import { FallingBooks } from "@/components/FallingBooks";
 import { Qr } from "./Qr";
 import { detectPlatform, useInstall, type Platform } from "./install";
 import { cn } from "@/lib/utils";
@@ -45,14 +45,15 @@ export function Landing() {
 
       {/* Герой: логотип, ценность, кнопка установки под платформу, телефон со скриншотом */}
       <section className="relative overflow-hidden">
-        <AnimatedGridPattern numSquares={24} maxOpacity={0.12} duration={3} width={48} height={48}
-          className="[mask-image:radial-gradient(520px_circle_at_50%_40%,white,transparent)] inset-x-0 h-full" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 opacity-50 [mask-image:linear-gradient(to_bottom,#000_60%,transparent)]">
+          <FallingBooks density={0.8} />
+        </div>
         <div className="relative mx-auto grid max-w-[1080px] items-center gap-10 px-4 pt-10 pb-12 md:grid-cols-[1.15fr_.85fr] md:pt-20 md:pb-20">
           <div>
             <BlurFade delay={0.05} duration={0.6}><Wordmark text={APP_NAME} className="max-w-[560px]" /></BlurFade>
             <BlurFade delay={0.2}>
-              <h1 className="mt-6 max-w-[20ch] text-[clamp(24px,6vw,40px)] leading-[1.12] font-semibold tracking-[-.02em]">ИИ-репетитор для подготовки к ЕГЭ и ОГЭ</h1>
-              <p className="mt-3 max-w-[46ch] text-[16px] text-fg-2">Варианты в формате ФИПИ, проверка ответов и разбор каждой ошибки. Бесплатно, прямо в телефоне, без магазина приложений.</p>
+              <h1 className="mt-6 max-w-[20ch] [text-shadow:0_0_8px_var(--bg),0_0_3px_var(--bg)] text-[clamp(24px,6vw,40px)] leading-[1.12] font-semibold tracking-[-.02em]">ИИ-репетитор для подготовки к ЕГЭ и ОГЭ</h1>
+              <p className="mt-3 max-w-[46ch] text-[16px] text-fg-2 [text-shadow:0_0_6px_var(--bg),0_0_2px_var(--bg)]">Варианты в формате ФИПИ, проверка ответов и разбор каждой ошибки. Бесплатно, прямо в телефоне, без магазина приложений.</p>
             </BlurFade>
             <BlurFade delay={0.32} className="mt-7"><InstallCta platform={detected} onSteps={scrollToSteps} /></BlurFade>
           </div>

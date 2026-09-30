@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/controls";
 import { Wordmark } from "@/components/Wordmark";
 import { BlurFade } from "@/components/magicui/blur-fade";
+import { FallingBooks } from "@/components/FallingBooks";
 import { shake } from "@/lib/fx";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +26,9 @@ export function Onboarding() {
   return (
     <div className="relative min-h-[calc(100dvh-env(safe-area-inset-top,0px))] overflow-hidden">
       {step === 0 && (
-        <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(var(--line)_1px,transparent_1px),linear-gradient(90deg,var(--line)_1px,transparent_1px)] bg-[size:32px_32px] opacity-80 [mask-image:radial-gradient(ellipse_at_50%_42%,#000,transparent_72%)]" />
+        <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 opacity-60 [mask-image:linear-gradient(to_bottom,#000_55%,transparent)]">
+          <FallingBooks />
+        </div>
       )}
       <AnimatePresence mode="wait" custom={dir} initial={false}>
         <motion.div key={step} custom={dir} variants={slide} initial="enter" animate="center" exit="exit"
@@ -47,7 +50,7 @@ function Title({ onStart }: { onStart: () => void }) {
       <div className="flex flex-1 flex-col justify-center gap-6 py-8">
         <BlurFade delay={0.05} duration={0.6}><Wordmark text={APP_NAME} /></BlurFade>
         <BlurFade delay={0.25}>
-          <h1 className="m-0 max-w-[22ch] text-[clamp(20px,5.6vw,26px)] leading-tight font-semibold tracking-[-.01em]">ИИ-репетитор для подготовки к ЕГЭ и ОГЭ</h1>
+          <h1 className="m-0 max-w-[22ch] [text-shadow:0_0_8px_var(--bg),0_0_3px_var(--bg),0_0_1px_var(--bg)] text-[clamp(20px,5.6vw,26px)] leading-tight font-semibold tracking-[-.01em]">ИИ-репетитор для подготовки к ЕГЭ и ОГЭ</h1>
         </BlurFade>
       </div>
       <BlurFade delay={0.4} className="pb-6">
