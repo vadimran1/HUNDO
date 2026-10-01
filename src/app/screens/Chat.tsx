@@ -6,7 +6,7 @@ import { subjName } from "@/lib/data";
 import { useT, isEn, examLabel, L } from "@/lib/i18n";
 import { askAI, aiErrorText, photoPrompt, useAiReady, withImage, type Msg } from "@/lib/ai";
 import { prepareImage } from "@/lib/image";
-import { daysLeft, cn } from "@/lib/utils";
+import { daysLeft, cn, prettyMath } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Typing } from "@/components/ui/controls";
 
@@ -162,7 +162,7 @@ function Bubble({ me, text, image, animate }: { me: boolean; text: string; image
         me ? "self-end rounded-br-[4px] bg-accent text-on-accent" : "self-start rounded-bl-[4px] bg-bg-2")}
     >
       {image && <img src={image} alt="" className="mb-2 max-h-[220px] w-auto rounded-xl" />}
-      {text || <Typing />}
+      {(me ? text : prettyMath(text)) || <Typing />}
     </motion.div>
   );
 }

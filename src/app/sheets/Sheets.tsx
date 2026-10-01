@@ -7,7 +7,7 @@ import { ACCENTS, APP_NAME, APP_VERSION, BUILD, PRESETS, subjects as subjectList
 import { useT, useLang, isEn, pl, examLabel, type Lang } from "@/lib/i18n";
 import { askAI, aiErrorText, photoPrompt, useAiReady, useServer } from "@/lib/ai";
 import { applyLook, burst, reveal, shake } from "@/lib/fx";
-import { cellStyle, daysLeft, examYear, cn } from "@/lib/utils";
+import { cellStyle, daysLeft, examYear, cn, prettyMath } from "@/lib/utils";
 import type { SubjectId } from "@/lib/tasks";
 import { Button } from "@/components/ui/button";
 import { Chip, Label, Section, Segmented, Switch, Typing, Verdict } from "@/components/ui/controls";
@@ -355,7 +355,7 @@ Give a week-by-week plan: what to study, how many tasks to solve, when to sit mo
       <Button className="mt-[18px] w-full" disabled={!ready || !!plan?.busy} onClick={gen}>{ready ? <>{t("Персональный план от ИИ", "Personal plan from the AI")} <ArrowRight /></> : t("ИИ не подключён — см. настройки", "AI not connected — see Settings")}</Button>
       {plan && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-3.5 rounded-xl bg-bg-2 px-4 py-3.5 text-sm leading-relaxed whitespace-pre-wrap text-fg-2">
-          <Label className="mb-1.5">{t("План от ИИ", "AI plan")}</Label>{plan.text || <Typing />}
+          <Label className="mb-1.5">{t("План от ИИ", "AI plan")}</Label>{prettyMath(plan.text) || <Typing />}
         </motion.div>
       )}
     </div>

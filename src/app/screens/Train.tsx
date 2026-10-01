@@ -8,7 +8,7 @@ import { subjName, subjNameRu, fipiBankUrl, sdamUrl } from "@/lib/data";
 import { useT } from "@/lib/i18n";
 import { askAI, aiErrorText, useAiReady } from "@/lib/ai";
 import { burst, shake } from "@/lib/fx";
-import { cellStyle, isCorrect } from "@/lib/utils";
+import { cellStyle, isCorrect, prettyMath } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Label, Segmented, Typing, Verdict } from "@/components/ui/controls";
 
@@ -128,7 +128,7 @@ Briefly explain why the correct answer is what it is. If the student was wrong, 
             {explain && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-3 rounded-xl bg-bg-2 px-4 py-3.5 text-sm leading-relaxed whitespace-pre-wrap text-fg-2">
                 <Label className="mb-1.5">{t("Объяснение ИИ", "AI explanation")}</Label>
-                {explain.text || <Typing />}
+                {prettyMath(explain.text) || <Typing />}
               </motion.div>
             )}
           </div>

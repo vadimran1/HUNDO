@@ -6,7 +6,7 @@ import { subjName, subjNameRu, fipiBankUrl, sdamUrl } from "@/lib/data";
 import { useT, L, isEn, pl, examLabel } from "@/lib/i18n";
 import { askAI, aiErrorText, AIError, useAiReady } from "@/lib/ai";
 import { burst, shake } from "@/lib/fx";
-import { cellStyle, cn, examYear, isCorrect } from "@/lib/utils";
+import { cellStyle, cn, examYear, isCorrect, prettyMath } from "@/lib/utils";
 import type { SubjectId } from "@/lib/tasks";
 import { Button } from "@/components/ui/button";
 import { Chip, Label, Segmented, Switch, Verdict } from "@/components/ui/controls";
@@ -326,7 +326,7 @@ Return ONLY JSON: {"score": integer from 0 to ${t.max}, "feedback": "2–4 sente
             <span className="min-w-0 flex-1 font-mono text-[11.5px] tracking-[.08em] text-fg-3 uppercase">{t.topic}</span>
             {t.type === "open" && <span className="flex-none rounded-[5px] border border-accent px-[7px] py-[3px] font-mono text-[11.5px] tracking-[.06em] uppercase">{tr("часть 2", "part 2")} · {t.max} {tr("б.", "pts")}</span>}
           </div>
-          <p className="mb-3.5 text-base leading-[1.55] break-words whitespace-pre-wrap lg:text-[17px]">{t.q}</p>
+          <p className="mb-3.5 text-base leading-[1.55] break-words whitespace-pre-wrap lg:text-[17px]">{prettyMath(t.q)}</p>
           {t.type === "open"
             ? <textarea className="field" rows={5} placeholder={tr("Развёрнутый ответ", "Extended answer")} disabled={v.done} value={v.given[t.n] || ""} onChange={e => setGiven(t.n, e.target.value)} />
             : <input className="cells" style={cellStyle((v.given[t.n] || "").length)} placeholder={tr("Ответ", "Answer")} autoComplete="off" autoCapitalize="off" spellCheck={false} disabled={v.done} value={v.given[t.n] || ""} onChange={e => setGiven(t.n, e.target.value)} />}
@@ -358,14 +358,14 @@ function Result({ t, r, onAsk }: { t: VTask; r: { score: number; feedback?: stri
     : r.score ? tr("Верно", "Correct") : tr("Неверно", "Wrong");
   return (
     <>
-      <Verdict kind={kind} title={title}>{t.type === "open" ? r.feedback : r.score ? undefined : `${tr("Правильный ответ", "Correct answer")}: ${t.answer}`}</Verdict>
+      <Verdict kind={kind} title={title}>{t.type === "open" ? prettyMath(r.feedback || "") : r.score ? undefined : `${tr("Правильный ответ", "Correct answer")}: ${t.answer}`}</Verdict>
       <button onClick={() => setOpen(o => !o)} aria-expanded={open} className="mt-2.5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-fg-2">
         {tr("Разбор", "Solution")} {open ? <Minus className="size-3.5 text-fg-3" /> : <Plus className="size-3.5 text-fg-3" />}
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }} className="overflow-hidden">
-            {t.exp && <div className="mt-2.5 rounded-xl bg-bg-2 px-4 py-3.5 text-sm leading-relaxed text-fg-2">{t.exp}</div>}
+            {t.exp && <div className="mt-2.5 rounded-xl bg-bg-2 px-4 py-3.5 text-sm leading-relaxed text-fg-2">{prettyMath(t.exp)}</div>}
             <Button variant="secondary" size="sm" className="mt-2.5" onClick={onAsk}>{tr("Спросить ИИ", "Ask the AI")} <ArrowRight /></Button>
           </motion.div>
         )}
