@@ -4,7 +4,8 @@
   "description": "Промо-ролик HUNDO на Remotion",
   "scripts": {
     "studio": "remotion studio src/index.ts",
-    "render": "python3 music.py && node render.mjs",
+    "render": "python3 hype_music.py && python3 music.py && node render.mjs video ru,en hype && node render.mjs video ru,en promo",
+    "render:hype": "python3 hype_music.py && node render.mjs video ru,en hype",
     "stills": "node render.mjs stills"
   },
   "dependencies": {

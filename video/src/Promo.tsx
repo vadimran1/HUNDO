@@ -7,11 +7,11 @@ export const FPS = 30;
 export const PROMO_FRAMES = 900; // 30 секунд
 
 type Lang = "ru" | "en";
-const C = { bg: "#0a0a0a", bg2: "#161616", bg3: "#202020", fg: "#f5f5f5", fg2: "#d4d4d4", fg3: "#9e9e9e", line: "#262626", line2: "#3a3a3a" };
-const DISPLAY = "Unbounded, 'Arial Black', sans-serif";
-const SANS = "Onest, system-ui, sans-serif";
-const MONO = "JetBrains Mono, monospace";
-const EASE = Easing.bezier(0.2, 0.8, 0.2, 1);
+export const C = { bg: "#0a0a0a", bg2: "#161616", bg3: "#202020", fg: "#f5f5f5", fg2: "#d4d4d4", fg3: "#9e9e9e", line: "#262626", line2: "#3a3a3a" };
+export const DISPLAY = "Unbounded, 'Arial Black', sans-serif";
+export const SANS = "Onest, system-ui, sans-serif";
+export const MONO = "JetBrains Mono, monospace";
+export const EASE = Easing.bezier(0.2, 0.8, 0.2, 1);
 
 // Сцены: [начало, конец] в кадрах
 const S = {
@@ -53,7 +53,7 @@ const TXT = {
 };
 
 /* ---------- шрифты: ждём загрузки, иначе первые кадры будут системным шрифтом ---------- */
-function useFonts() {
+export function useFonts() {
   const [handle] = useState(() => delayRender("fonts"));
   useEffect(() => {
     const faces: [string, string, string][] = [];
@@ -70,8 +70,8 @@ function useFonts() {
 }
 
 /* ---------- помощники анимации ---------- */
-const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
-const lerp = (f: number, a: number, b: number, from = 0, to = 1) => interpolate(f, [a, b], [from, to], { ...clamp, easing: EASE });
+export const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+export const lerp = (f: number, a: number, b: number, from = 0, to = 1) => interpolate(f, [a, b], [from, to], { ...clamp, easing: EASE });
 function useSpring(delay = 0, cfg = { damping: 18, stiffness: 120, mass: 0.9 }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -96,7 +96,7 @@ function Fade({ len, out, children }: { len: number; out: number; children: Reac
 }
 
 /* ---------- падающие книжки (как на титульном экране приложения) ---------- */
-function Books({ opacity }: { opacity: number }) {
+export function Books({ opacity }: { opacity: number }) {
   const f = useCurrentFrame();
   const books = Array.from({ length: 34 }, (_, i) => {
     const x = random("x" + i) * 1920, w = 26 + random("w" + i) * 26, speed = 1.2 + random("s" + i) * 2.4;
@@ -233,7 +233,7 @@ function ProblemScene({ lang }: { lang: Lang }) {
 }
 
 /* ---------- телефон и окно браузера ---------- */
-function Phone({ src, style, scrollY = 0 }: { src: string; style?: CSSProperties; scrollY?: number }) {
+export function Phone({ src, style, scrollY = 0 }: { src: string; style?: CSSProperties; scrollY?: number }) {
   return (
     <div style={{ width: 404, height: 836, borderRadius: 64, scale: 0.86, marginTop: -70, flex: "none", background: "#000", padding: 14, boxShadow: `0 0 0 2px ${C.line2}, 0 50px 120px rgba(0,0,0,.6)`, ...style }}>
       <div style={{ position: "relative", width: "100%", height: "100%", borderRadius: 50, overflow: "hidden", background: C.bg }}>

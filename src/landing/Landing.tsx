@@ -19,13 +19,16 @@ import { cn } from "@/lib/utils";
 const APP_URL = "/app/";
 type Phone = "ios" | "android";
 const shot = (lang: Lang, name: string) => `/screens/${lang}/${name}.webp`;
-const promo = (lang: Lang) => `/promo/hundo-${lang}.mp4`;
+type Cut = "hype" | "calm";
+const promo = (lang: Lang, cut: Cut) => `/promo/hundo-${cut === "hype" ? "hype-" : ""}${lang}.mp4`;
+const poster = (lang: Lang, cut: Cut) => `/promo/poster-${cut === "hype" ? "hype-" : ""}${lang}.webp`;
 
 export function Landing() {
   const t = useT();
   const detected = detectPlatform();
   const [phone, setPhone] = useState<Phone>(detected === "android" ? "android" : "ios");
   const [qrOpen, setQrOpen] = useState(false);
+  const [cut, setCut] = useState<Cut>("hype");
 
   // тема и акцент — те же, что выбраны в приложении на этом устройстве
   useEffect(() => {
@@ -157,15 +160,20 @@ export function Landing() {
       <section id="video" className="scroll-mt-16 border-t border-line">
         <div className="mx-auto max-w-[1180px] px-4 py-16 md:px-6 md:py-24">
           <Eyebrow>{t("Ролик", "Video")}</Eyebrow>
-          <h2 className="mt-3 font-display text-[clamp(24px,5vw,40px)] leading-[1.1] font-bold tracking-[-.02em]">{t("HUNDO за 30 секунд", "HUNDO in 30 seconds")}</h2>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+            <h2 className="font-display text-[clamp(24px,5vw,40px)] leading-[1.1] font-bold tracking-[-.02em]">{t("HUNDO за 30 секунд", "HUNDO in 30 seconds")}</h2>
+            <div className="w-full max-w-[340px]">
+              <Segmented id="cut" value={cut} onChange={v => setCut(v)} items={[["hype", t("Под бит", "On the beat")], ["calm", t("Спокойный", "Calm")]]} />
+            </div>
+          </div>
           <BlurFade inView className="mt-8">
             <div className="overflow-hidden rounded-[18px] border border-line-2 bg-black">
-              <video key={t.lang} className="block aspect-video w-full" controls playsInline preload="metadata" poster={`/promo/poster-${t.lang}.webp`}>
-                <source src={promo(t.lang)} type="video/mp4" />
+              <video key={t.lang + cut} className="block aspect-video w-full" controls playsInline preload="metadata" poster={poster(t.lang, cut)}>
+                <source src={promo(t.lang, cut)} type="video/mp4" />
               </video>
             </div>
           </BlurFade>
-          <a href={promo(t.lang)} download className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-fg-2 hover:text-fg">
+          <a href={promo(t.lang, cut)} download className="mt-3 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-fg-2 hover:text-fg">
             <Download className="size-4" /> {t("Скачать ролик (MP4)", "Download the video (MP4)")}
           </a>
         </div>

@@ -1,6 +1,7 @@
-// Рендер промо-ролика HUNDO.
-//   node render.mjs            — оба ролика (ru, en) в ../public/promo/
-//   node render.mjs stills     — контрольные кадры в ./out/
+// Рендер промо-роликов HUNDO.
+//   node render.mjs video ru,en hype   — энергичный ролик под бит → ../public/promo/hundo-hype-ru.mp4, -en.mp4
+//   node render.mjs video ru,en promo  — спокойный ролик        → ../public/promo/hundo-ru.mp4, -en.mp4
+//   node render.mjs stills ru hype 100,200 — контрольные кадры в ./out/
 import path from "node:path";
 import fs from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -26,29 +27,31 @@ fs.mkdirSync(path.join(here, "out"), { recursive: true });
 
 const mode = process.argv[2] || "video";
 const langs = (process.argv[3] || "ru,en").split(",");
+const kind = process.argv[4] || "hype";
+const name = (lang) => kind === "hype" ? `hundo-hype-${lang}` : `hundo-${lang}`;
 for (const lang of langs) {
-  const composition = await selectComposition({ serveUrl, id: `promo-${lang}`, browserExecutable });
+  const composition = await selectComposition({ serveUrl, id: `${kind}-${lang}`, browserExecutable });
   if (mode === "stills") {
-    const frames = (process.argv[4] || "60,150,290,400,540,700,790,880").split(",").map(Number);
+    const frames = (process.argv[5] || "30,120,175,200,330,430,530,620,700,760,880").split(",").map(Number);
     for (const frame of frames) {
-      await renderStill({ composition, serveUrl, frame, output: path.join(here, "out", `${lang}-${frame}.png`), browserExecutable });
+      await renderStill({ composition, serveUrl, frame, output: path.join(here, "out", `${kind}-${lang}-${frame}.png`), browserExecutable });
     }
   } else {
     await renderMedia({
       composition, serveUrl, codec: "h264", crf: 20, pixelFormat: "yuv420p", browserExecutable,
-      outputLocation: path.join(out, `hundo-${lang}.mp4`), concurrency: 2,
+      outputLocation: path.join(out, `${name(lang)}.mp4`), concurrency: 2,
       onProgress: ({ progress }) => { if (Math.round(progress * 100) % 20 === 0) process.stdout.write(`${lang} ${Math.round(progress * 100)}%  `); },
     });
-    // звук: музыка из music.py, громкость выравнивается до −15 LUFS
-    const music = path.join(here, "public", "music.wav");
+    // звук: hype.wav из hype_music.py или music.wav из music.py, громкость выравнивается до −14 LUFS
+    const music = path.join(here, "public", kind === "hype" ? "hype.wav" : "music.wav");
     if (fs.existsSync(music)) {
-      const v = path.join(out, `hundo-${lang}.mp4`), tmp = path.join(out, `tmp-${lang}.mp4`);
+      const v = path.join(out, `${name(lang)}.mp4`), tmp = path.join(out, `tmp-${lang}.mp4`);
       execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", v, "-i", music, "-map", "0:v", "-map", "1:a", "-c:v", "copy",
-        "-af", "loudnorm=I=-15:TP=-1.5:LRA=9", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-shortest", "-movflags", "+faststart", tmp]);
+        "-af", kind === "hype" ? "loudnorm=I=-14:TP=-1.2:LRA=7" : "loudnorm=I=-15:TP=-1.5:LRA=9", "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-shortest", "-movflags", "+faststart", tmp]);
       fs.renameSync(tmp, v);
     }
     // обложка для плеера на сайте — кадр с логотипом
-    await renderStill({ composition, serveUrl, frame: 170, output: path.join(out, `poster-${lang}.png`), browserExecutable });
+    await renderStill({ composition, serveUrl, frame: kind === "hype" ? 230 : 170, output: path.join(out, `poster-${kind === "hype" ? "hype-" : ""}${lang}.png`), browserExecutable });
   }
 }
 console.log("\nготово");

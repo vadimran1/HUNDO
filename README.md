@@ -7,7 +7,7 @@
 - **Сайт** — `/` (русский) и `/en` (английский): установка на телефон, QR-код, версия для компьютера, промо-ролик.
 - **Приложение** — `/app/`: тренажёр, варианты от ИИ, разбор заданий, чат, прогресс, план. На телефоне — нижние вкладки, на компьютере (экран от 1024 px) — боковое меню, широкие экраны и горячие клавиши.
 - **Сервер ИИ** — `/api/chat`: функция Vercel, хранит ключ и передаёт запросы в OdiRouter или OpenRouter.
-- **Промо-ролик** — `video/`: 30 секунд, сделан кодом на Remotion, русская и английская версии.
+- **Промо-ролики** — `video/`: сделаны кодом на Remotion, русская и английская версии. Энергичный под бит (150 BPM, 32 с) и спокойный (30 с).
 
 ## Два языка
 Переключатель **RU / EN** — в шапке сайта, на титульном экране, в боковом меню и в настройках. Выбор общий для сайта и приложения.
@@ -90,7 +90,7 @@ Vercel → Project → **Settings → Domains**. Если адрес `*.vercel.a
 | Тексты сайта для установки | `src/landing/Landing.tsx` |
 | Переводы | рядом с текстом: `t("рус", "eng")`; язык — `src/lib/i18n.ts` |
 | Скриншоты на сайте | `public/screens/ru/`, `public/screens/en/` — пересоздаются скриптом `scripts/shots.mjs` |
-| Промо-ролик | `video/src/Promo.tsx` (сцены и тексты), `video/music.py` (музыка) |
+| Промо-ролики | `video/src/Hype.tsx`, `video/src/Promo.tsx` (сцены и тексты), `video/hype_music.py`, `video/music.py` (музыка) |
 | Иконка | `public/icons/` |
 | Промпт репетитора | `src/lib/ai.ts` → `SYSTEM_PROMPT` |
 
@@ -104,13 +104,18 @@ npm run build        # сборка в dist
 OPENROUTER_API_KEY=ваш_ключ node scripts/serve.mjs   # http://localhost:3000 — всё вместе, с ИИ
 ```
 
-## Промо-ролик
+## Промо-ролики
+Два ролика, оба собраны кодом (React + Remotion), музыка синтезирована на Python — чужих сэмплов нет:
+- **под бит** — `video/src/Hype.tsx` + `video/hype_music.py`: 150 BPM, одна доля = ровно 12 кадров, поэтому каждая склейка и вспышка стоит на доле;
+- **спокойный** — `video/src/Promo.tsx` + `video/music.py`.
+
 ```bash
 cd video && npm install
-npm run studio       # предпросмотр в браузере, можно листать кадры
-npm run render       # музыка + оба ролика со звуком → public/promo/hundo-ru.mp4, hundo-en.mp4
+npm run studio                                  # предпросмотр в браузере
+python3 hype_music.py && node render.mjs video ru,en hype    # → public/promo/hundo-hype-ru.mp4, -en.mp4
+python3 music.py && node render.mjs video ru,en promo        # → public/promo/hundo-ru.mp4, -en.mp4
 ```
-Нужны Python 3 с numpy и scipy (для музыки) и FFmpeg (для звуковой дорожки).
+Нужны Python 3 с numpy и scipy (музыка) и FFmpeg (звуковая дорожка, громкость −14 LUFS).
 
 ## Скриншоты
 ```bash
