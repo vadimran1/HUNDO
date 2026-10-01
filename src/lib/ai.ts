@@ -81,7 +81,8 @@ export async function askAI(messages: Msg[], onDelta: (piece: string) => void, s
       const data = t.slice(5).trim();
       if (data === "[DONE]") continue;
       try {
-        const piece = JSON.parse(data).choices?.[0]?.delta?.content;
+        // убираем markdown-выделение звёздочками, если модель его всё же добавила
+        const piece = (JSON.parse(data).choices?.[0]?.delta?.content || "").replace(/\*\*/g, "");
         if (piece) { full += piece; onDelta(piece); }
       } catch { /* незавершённый кусок */ }
     }
