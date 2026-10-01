@@ -4,13 +4,18 @@ import type { AccentId, Exam, Provider } from "./data";
 import type { SubjectId } from "./tasks";
 
 export type Settings = { provider: Provider; base: string; model: string; key: string };
-export type ChatMsg = { role: "user" | "assistant"; content: string };
+/** image — маленькая копия фото (превью в чате); сам снимок в историю не сохраняется */
+export type ChatMsg = { role: "user" | "assistant"; content: string; image?: string };
 export type VTask = { n: number; type: "short" | "open"; topic: string; q: string; answer: string; alt: string[]; max: number; exp: string };
 export type VResult = { score: number; feedback?: string };
 export type Variant = {
   subj: SubjectId; exam: Exam; created: number; tasks: VTask[];
   given: Record<number, string>; results: Record<number, VResult>; done: boolean;
+  /** режим экзамена: отведённые минуты и момент старта; finished — когда сдан */
+  timer?: { minutes: number; startedAt: number; finishedAt?: number };
 };
+/** Карточка в интервальном повторении: коробка 1–5 и дата следующего показа */
+export type CardState = { box: number; due: string };
 
 type Data = {
   onboarded: boolean;
@@ -26,6 +31,8 @@ type Data = {
   chat: ChatMsg[];
   weakAI: { subj: SubjectId; topic: string }[];
   variant: Variant | null;
+  cards: Record<string, CardState>;
+  remind: boolean;
 };
 
 type Actions = {
@@ -52,6 +59,8 @@ const initial: Data = {
   chat: [],
   weakAI: [],
   variant: null,
+  cards: {},
+  remind: false,
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -91,13 +100,15 @@ export const useApp = create<Data & Actions>()(
 
 /** Состояние интерфейса, которое не нужно сохранять */
 export type Tab = "home" | "train" | "variant" | "chat" | "stats";
+/** Запрос в чат с другого экрана: text уходит ИИ, display показывается в пузыре (если отличается) */
+export type Pending = { text: string; image?: string; thumb?: string; display?: string };
 export type SheetId = "settings" | "about" | "paste" | "plan" | "sources" | null;
 
 export const useUI = create<{
-  tab: Tab; dir: number; sheet: SheetId; pendingChat: string; onbStep: number;
-  go: (t: Tab) => void; openSheet: (s: SheetId) => void; askInChat: (text: string) => void;
+  tab: Tab; dir: number; sheet: SheetId; pendingChat: Pending | null; onbStep: number; trainMode: "tasks" | "cards";
+  go: (t: Tab) => void; openSheet: (s: SheetId) => void; askInChat: (text: string, image?: string, thumb?: string, display?: string) => void;
 }>()((set, get) => ({
-  tab: "home", dir: 1, sheet: null, pendingChat: "", onbStep: 0,
+  tab: "home", dir: 1, sheet: null, pendingChat: null, onbStep: 0, trainMode: "tasks",
   go: t => {
     const order: Tab[] = ["home", "train", "variant", "chat", "stats"];
     const dir = order.indexOf(t) >= order.indexOf(get().tab) ? 1 : -1;
@@ -106,5 +117,5 @@ export const useUI = create<{
     window.scrollTo(0, 0);
   },
   openSheet: s => set({ sheet: s }),
-  askInChat: text => { set({ pendingChat: text, sheet: null }); get().go("chat"); },
+  askInChat: (text, image, thumb, display) => { set({ pendingChat: { text, image, thumb, display }, sheet: null }); get().go("chat"); },
 }));

@@ -87,10 +87,10 @@ export function HomeScreen() {
           </motion.button>
           <div className="grid grid-cols-2 gap-2 lg:gap-3">
             {([
-              [t("Тренажёр", "Practice"), t("задания с разбором", "tasks with solutions"), () => go("train")],
-              [t("Разобрать задание", "Explain a task"), t("вставьте условие", "paste any task"), () => openSheet("paste")],
+              [t("Тренажёр", "Practice"), t("задания с разбором", "tasks with solutions"), () => { useUI.setState({ trainMode: "tasks" }); go("train"); }],
+              [t("Карточки", "Flashcards"), t("даты, термины, формулы", "dates, terms, formulas"), () => { useUI.setState({ trainMode: "cards" }); go("train"); }],
+              [t("Фото задания", "Photo of a task"), t("сфоткай — ИИ решит", "snap it, the AI solves it"), () => openSheet("paste")],
               [t("План", "Study plan"), t("по неделям до экзамена", "week by week"), () => openSheet("plan")],
-              [t("Источники", "Sources"), t("ФИПИ и Сдам ГИА", "FIPI & Sdam GIA"), () => openSheet("sources")],
             ] as const).map(([label, sub, fn]) => (
               <motion.button key={label} whileTap={{ scale: 0.97 }} whileHover={{ y: -2 }} onClick={fn}
                 className="rounded-[14px] border border-line px-3.5 py-[15px] text-left text-[14px] leading-tight font-bold transition-colors hover:border-fg lg:px-5 lg:py-5 lg:text-[15.5px]">

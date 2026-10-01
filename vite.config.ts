@@ -68,6 +68,8 @@ export default defineConfig({
         // в офлайн-кэш — только кириллица и латиница, остальные наборы шрифтов браузер не скачивает
         globIgnores: ["**/*-{vietnamese,greek,greek-ext,math,symbols,latin-ext,cyrillic-ext}-wght-*.woff2", "screens/**", "promo/**"],
         navigateFallback: null,
+        // напоминания: обработчик push-уведомлений (public/push-sw.js)
+        importScripts: ["push-sw.js"],
         cleanupOutdatedCaches: true,
         ignoreURLParametersMatching: [/.*/],
         maximumFileSizeToCacheInBytes: 3_000_000,

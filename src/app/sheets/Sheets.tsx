@@ -1,15 +1,17 @@
 import { Fragment, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Camera } from "lucide-react";
+import { prepareImage } from "@/lib/image";
 import { useApp, useUI, defaultSettings, type Settings } from "@/lib/store";
 import { ACCENTS, APP_NAME, APP_VERSION, BUILD, PRESETS, subjects as subjectList, subjName, subjNameRu, fipiBankUrl, fipiDemoUrl, sdamUrl, type Provider, type Exam } from "@/lib/data";
 import { useT, useLang, isEn, pl, examLabel, type Lang } from "@/lib/i18n";
-import { askAI, aiErrorText, useAiReady, useServer } from "@/lib/ai";
+import { askAI, aiErrorText, photoPrompt, useAiReady, useServer } from "@/lib/ai";
 import { applyLook, burst, reveal, shake } from "@/lib/fx";
 import { cellStyle, daysLeft, examYear, cn } from "@/lib/utils";
 import type { SubjectId } from "@/lib/tasks";
 import { Button } from "@/components/ui/button";
-import { Chip, Label, Section, Segmented, Typing, Verdict } from "@/components/ui/controls";
+import { Chip, Label, Section, Segmented, Switch, Typing, Verdict } from "@/components/ui/controls";
+import { disableRemind, enableRemind, type PushFail } from "@/lib/push";
 import { Wordmark } from "@/components/Wordmark";
 import { Sheet } from "../Shell";
 import { weakTopics } from "../screens/Stats";
@@ -100,6 +102,8 @@ function SettingsSheet() {
       </div>
       <p className="mt-2 font-mono text-[12px] text-fg-3">{(() => { const a = ACCENTS.find(a => a.id === app.accent); return a ? t(a.name, a.en) : ""; })()}</p>
 
+      <RemindBlock />
+
       <Section>{t("Экзамен", "Exam")}</Section>
       <Segmented id="exam" value={exam} items={[["ЕГЭ", t("ЕГЭ · 11 класс", "EGE · grade 11")], ["ОГЭ", t("ОГЭ · 9 класс", "OGE · grade 9")]]} onChange={v => setExam(v)} />
       <label className="mt-4 block"><Label>{t("Дата первого экзамена", "Date of your first exam")}</Label><input type="date" className="field" value={date} onChange={e => setDate(e.target.value)} /></label>
@@ -144,6 +148,7 @@ function SettingsSheet() {
       <div className="grid gap-2">
         {[
           [t("О проекте", "About the project"), t("цель, возможности, технологии", "purpose, features, technology"), () => useUI.setState({ sheet: "about" })],
+          [t("Источники заданий", "Task sources"), t("ФИПИ и Сдам ГИА по вашим предметам", "FIPI and Sdam GIA for your subjects"), () => useUI.setState({ sheet: "sources" })],
           [t("Показать заставку", "Show intro screen"), t("титульный экран с логотипом", "the title screen with the logo"), () => { app.patch({ onboarded: false }); useUI.setState({ sheet: null, onbStep: 0 }); }],
         ].map(([t, s, fn]) => (
           <button key={t as string} onClick={fn as () => void} className="group flex items-center gap-3.5 rounded-[14px] border border-line px-4 py-3.5 text-left hover:border-fg">
@@ -153,6 +158,41 @@ function SettingsSheet() {
         ))}
       </div>
     </div>
+  );
+}
+
+/* ---------- напоминания ---------- */
+function RemindBlock() {
+  const remind = useApp(s => s.remind);
+  const patch = useApp(s => s.patch);
+  const lang = useLang(s => s.lang);
+  const t = useT();
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  const NOTES: Record<PushFail, [string, string]> = {
+    "ios-install": ["На iPhone напоминания работают, когда HUNDO установлен на главный экран: Safari → «Поделиться» → «На экран „Домой“». Потом включите их здесь.", "On iPhone reminders work once HUNDO is on your home screen: Safari → Share → Add to Home Screen. Then turn them on here."],
+    unsupported: ["Этот браузер не поддерживает уведомления. Попробуйте Chrome или установите приложение.", "This browser doesn't support notifications. Try Chrome or install the app."],
+    server: ["Сервер напоминаний пока не настроен. Автору: подключите базу Upstash for Redis в Vercel → Storage.", "The reminder server isn't set up yet. Author: connect an Upstash for Redis database in Vercel → Storage."],
+    denied: ["Уведомления запрещены. Разрешите их в настройках браузера или телефона для этого сайта.", "Notifications are blocked. Allow them for this site in your browser or phone settings."],
+    error: ["Не получилось включить напоминания. Попробуйте ещё раз.", "Couldn't turn on reminders. Please try again."],
+  };
+  const toggle = async (on: boolean) => {
+    setBusy(true); setNote("");
+    if (on) {
+      const r = await enableRemind(lang);
+      if (r.ok) patch({ remind: true });
+      else setNote(t(...NOTES[r.reason]));
+    } else { await disableRemind(); patch({ remind: false }); }
+    setBusy(false);
+  };
+  return (
+    <>
+      <Section>{t("Напоминания", "Reminders")}</Section>
+      <div className={busy ? "pointer-events-none opacity-60" : ""}>
+        <Switch checked={remind} onChange={toggle}>{t("Напомнить в 18:00, если я 2 дня не занимался", "Remind me at 6 pm if I skip 2 days")}</Switch>
+      </div>
+      {note && <p className="mt-2 text-[12.5px] leading-snug text-fg-2">{note}</p>}
+    </>
   );
 }
 
@@ -168,9 +208,13 @@ function AboutSheet() {
   const features: [string, string][] = [
     [t("Варианты от ИИ", "AI mock exams"), t("5–15 заданий в формате ФИПИ, проверка и оценка части 2 по критериям", "5–15 tasks in the FIPI format, auto-marking and Part 2 graded against criteria")],
     [t("Разбор любого задания", "Explain any task"), t("вставил условие — получил решение по шагам", "paste a task, get a step-by-step solution")],
-    [t("Тренажёр", "Practice"), t("банк заданий с разборами, поле ответа как в бланке", "a task bank with solutions and an answer field like the real form")],
+    [t("Тренажёр", "Practice"), t("76 заданий с разборами, поле ответа как в бланке", "76 tasks with solutions and an answer field like the real form")],
     [t("Прогресс", "Progress"), t("точность по предметам, серия дней, темы на повторение", "accuracy by subject, day streak, topics to review")],
     [t("План подготовки", "Study plan"), t("персональный план по неделям до даты экзамена", "a personal week-by-week plan up to the exam date")],
+    [t("Фото задания", "Photo of a task"), t("сфотографировал задачу из учебника — ИИ переписал условие и решил по шагам", "snap a task from a textbook — the AI transcribes and solves it step by step")],
+    [t("Режим экзамена", "Exam mode"), t("таймер, автосдача по окончании времени, примерный тестовый балл", "a timer, automatic hand-in when time is up, an estimated test score")],
+    [t("Карточки", "Flashcards"), t("98 карточек: даты, термины, формулы; интервальное повторение", "98 cards: dates, terms, formulas; spaced repetition")],
+    [t("Напоминания", "Reminders"), t("push-уведомление, если 2 дня не занимался", "a push notification if you skip 2 days")],
     [t("Два языка и компьютер", "Two languages and desktop"), t("русский и английский интерфейс, отдельная раскладка для ПК", "Russian and English interface, a dedicated desktop layout")],
   ];
   const tech: [string, string][] = [
@@ -226,12 +270,36 @@ function PasteSheet() {
   const [task, setTask] = useState("");
   const [ans, setAns] = useState("");
   const ta = useRef<HTMLTextAreaElement>(null);
+  const file = useRef<HTMLInputElement>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoErr, setPhotoErr] = useState("");
   const t = useT();
+  const onPhoto = async (f?: File) => {
+    if (!f) return;
+    setPhotoBusy(true); setPhotoErr("");
+    try {
+      const { image, thumb } = await prepareImage(f);
+      askInChat(photoPrompt(exam, subjNameRu(subj) + (isEn() ? ` (${subjName(subj)})` : ""), ans.trim() || undefined), image, thumb,
+        t(`Разбери задание с фото · ${subjName(subj)}`, `Explain the task in the photo · ${subjName(subj)}`) + (ans.trim() ? t(`\nМой ответ: ${ans.trim()}`, `\nMy answer: ${ans.trim()}`) : ""));
+    } catch { setPhotoErr(t("Не получилось открыть фото. Попробуйте другой снимок.", "Couldn't open the photo. Try another one.")); }
+    finally { setPhotoBusy(false); if (file.current) file.current.value = ""; }
+  };
   return (
     <div className="pb-2">
-      <p className="mt-1 mb-[18px] text-[13px] text-fg-2">{t("Скопируйте условие с ", "Copy a task from ")}<a className="link-u text-fg" href={sdamUrl(subjects[0] || "hist", exam)} target="_blank" rel="noopener">{t("Сдам ГИА", "Sdam GIA")}</a>{t(", из банка ФИПИ или сборника — ИИ решит его по шагам и объяснит, как решать такие задания.", ", the FIPI bank or a workbook — the AI solves it step by step and explains how to approach tasks like it.")}</p>
       <Label>{t("Предмет", "Subject")}</Label>
       <div className="mb-4 flex flex-wrap gap-2">{subjects.map(id => <Chip key={id} pressed={id === subj} onClick={() => setSubj(id)}>{subjName(id)}</Chip>)}</div>
+      <input ref={file} type="file" accept="image/*" className="hidden" onChange={e => onPhoto(e.target.files?.[0])} />
+      <motion.button whileTap={{ scale: 0.98 }} disabled={!ready || photoBusy} onClick={() => file.current?.click()}
+        className="flex w-full items-center gap-4 rounded-[16px] bg-accent px-5 py-5 text-left text-on-accent disabled:opacity-50">
+        <span className="grid size-12 flex-none place-items-center rounded-xl bg-on-accent/15"><Camera className="size-6" /></span>
+        <span className="min-w-0 flex-1">
+          <b className="block text-[16px]">{photoBusy ? t("Готовлю фото…", "Preparing the photo…") : t("Сфотографировать задание", "Take a photo of a task")}</b>
+          <span className="text-[12.5px] opacity-75">{t("учебник, сборник или экран — ИИ перепишет условие и решит", "a textbook, workbook or screen — the AI transcribes and solves it")}</span>
+        </span>
+      </motion.button>
+      {photoErr && <p className="mt-2 text-[12.5px] text-fg-2">{photoErr}</p>}
+      <div className="my-5 flex items-center gap-3 font-mono text-[12px] tracking-[.12em] text-fg-3 uppercase after:h-px after:flex-1 after:bg-line before:h-px before:flex-1 before:bg-line">{t("или текстом", "or as text")}</div>
+      <p className="mb-[18px] text-[13px] text-fg-2">{t("Скопируйте условие с ", "Copy a task from ")}<a className="link-u text-fg" href={sdamUrl(subjects[0] || "hist", exam)} target="_blank" rel="noopener">{t("Сдам ГИА", "Sdam GIA")}</a>{t(", из банка ФИПИ или сборника — ИИ решит его по шагам и объяснит, как решать такие задания.", ", the FIPI bank or a workbook — the AI solves it step by step and explains how to approach tasks like it.")}</p>
       <label className="block"><Label>{t("Условие задания", "Task text")}</Label><textarea ref={ta} className="field" rows={7} value={task} onChange={e => setTask(e.target.value)} placeholder={t("Вставьте текст задания", "Paste the task here")} /></label>
       <label className="mt-4 block"><Label>{t("Ваш ответ — необязательно", "Your answer — optional")}</Label><input className="cells" style={cellStyle(ans.length)} value={ans} onChange={e => setAns(e.target.value)} placeholder={t("Если уже решали — ИИ проверит", "Solved it already? The AI will check")} /></label>
       <Button className="mt-4 w-full" disabled={!ready} onClick={() => {

@@ -48,7 +48,30 @@ export class AIError extends Error {
   constructor(public kind: string, message: string) { super(message); }
 }
 
-type Msg = { role: "system" | "user" | "assistant"; content: string };
+/** Сообщение в формате OpenAI: текст или текст + картинка (data:image/jpeg;base64,…) */
+export type Part = { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } };
+export type Msg = { role: "system" | "user" | "assistant"; content: string | Part[] };
+
+/** Что просим у ИИ, когда ученик прислал фото задания */
+export function photoPrompt(exam: string, subj?: string, answer?: string) {
+  if (isEn()) return `The photo shows a task for the ${exam === "ОГЭ" ? "OGE" : "EGE"} (Russian state exam). ${subj ? `Subject: ${subj}.` : "Work out the subject."}
+1) Rewrite the task as text — the first line must start with "Task: …" (keep Russian text as it is, then add a short English translation).
+2) Solve it step by step, briefly and clearly, in English.
+3) Give the answer the way it is written on the answer form — a line "Answer: …".
+4) Name the FIPI codifier topic.
+If there are several tasks in the photo, solve the first one and list the numbers of the others. If the text is unreadable, say so and ask for a clearer photo.${answer ? `\nMy answer: ${answer}. Check it and explain the mistake if there is one.` : ""}`;
+  return `На фото — задание для подготовки к ${exam}. ${subj ? `Предмет: ${subj}.` : "Определи предмет."}
+1) Перепиши условие текстом — первая строка «Условие: …».
+2) Реши по шагам, коротко и понятно.
+3) Запиши ответ так, как его вносят в бланк, — строкой «Ответ: …».
+4) Назови тему по кодификатору ФИПИ.
+Если на фото несколько заданий — разбери первое и перечисли номера остальных. Если текст не читается — так и скажи и попроси переснять.${answer ? `\nМой ответ: ${answer}. Проверь его и объясни ошибку, если она есть.` : ""}`;
+}
+
+/** Сообщение пользователя с фото задания */
+export const withImage = (text: string, image: string): Msg => ({
+  role: "user", content: [{ type: "text", text }, { type: "image_url", image_url: { url: image } }],
+});
 
 export async function askAI(messages: Msg[], onDelta: (piece: string) => void, signal?: AbortSignal, settingsOverride?: Settings) {
   const s = settingsOverride || useApp.getState().settings;

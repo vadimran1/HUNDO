@@ -6,7 +6,7 @@ import { subjName, subjNameRu, fipiBankUrl, sdamUrl } from "@/lib/data";
 import { useT, L, isEn, pl, examLabel } from "@/lib/i18n";
 import { askAI, aiErrorText, AIError, useAiReady } from "@/lib/ai";
 import { burst, shake } from "@/lib/fx";
-import { cellStyle, examYear, isCorrect } from "@/lib/utils";
+import { cellStyle, cn, examYear, isCorrect } from "@/lib/utils";
 import type { SubjectId } from "@/lib/tasks";
 import { Button } from "@/components/ui/button";
 import { Chip, Label, Segmented, Switch, Verdict } from "@/components/ui/controls";
@@ -64,6 +64,8 @@ function Setup() {
   const [subj, setSubj] = useState<SubjectId>(subjects[0] || "hist");
   const [count, setCount] = useState<"5" | "10" | "15">("10");
   const [open, setOpen] = useState(true);
+  const [examMode, setExamMode] = useState(false);
+  const minutes = examMinutes(+count, open);
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState<string[]>([]);
   const [err, setErr] = useState("");
@@ -82,7 +84,8 @@ function Setup() {
       });
       setLog(l => [...l, t("проверяю формат", "checking the format")]);
       const tasks = parseVariant(text);
-      patch({ variant: { subj, exam, created: Date.now(), tasks, given: {}, results: {}, done: false } });
+      const mins = examMinutes(tasks.filter(x => x.type === "short").length, tasks.some(x => x.type === "open"));
+      patch({ variant: { subj, exam, created: Date.now(), tasks, given: {}, results: {}, done: false, ...(examMode ? { timer: { minutes: mins, startedAt: Date.now() } } : {}) } });
     } catch (e) {
       setBusy(false);
       setErr(e instanceof AIError ? aiErrorText(e) : (e as Error).message);
@@ -126,6 +129,9 @@ function Setup() {
           <Segmented id="vcount" value={count} onChange={v => setCount(v)} items={[["5", "5"], ["10", "10"], ["15", "15"]]} />
         </div>
         <div className="mt-5"><Switch checked={open} onChange={setOpen}>{t("Задание с развёрнутым ответом — ИИ оценит его по критериям", "Extended-answer task — the AI marks it against the criteria")}</Switch></div>
+        <div className="mt-4"><Switch checked={examMode} onChange={setExamMode}>
+          {t(`Режим экзамена: таймер на ${minutes} мин, по окончании времени вариант сдаётся сам`, `Exam mode: a ${minutes}-minute timer, the paper is handed in when time runs out`)}
+        </Switch></div>
 
         <Button className="mt-6 w-full lg:w-auto lg:min-w-[280px]" size="lg" disabled={!ready} onClick={generate}>{ready ? <>{t("Составить вариант", "Create mock exam")} <ArrowRight /></> : t("ИИ не подключён — см. настройки", "AI not connected — see Settings")}</Button>
         {err && <div ref={errRef} className="hatch mt-3 rounded-xl border border-line-2 px-4 py-3 text-[13.5px]">{err}</div>}
@@ -150,6 +156,66 @@ function Setup() {
           ))}
         </ol>
       </aside>
+    </div>
+  );
+}
+
+/** Время на вариант в режиме экзамена: 3 минуты на задание с кратким ответом и 20 — на развёрнутое */
+function examMinutes(short: number, open: boolean) {
+  return Math.max(10, short * 3 + (open ? 20 : 0));
+}
+const mmss = (ms: number) => {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+};
+
+/** Таймер экзамена: прилипает к верху, в последние 5 минут становится инверсным */
+function ExamTimer({ timer, busy, onTimeUp }: { timer: NonNullable<Variant["timer"]>; busy: boolean; onTimeUp: () => void }) {
+  const t = useT();
+  const total = timer.minutes * 60_000;
+  const [now, setNow] = useState(Date.now());
+  const fired = useRef(false);
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 500); return () => clearInterval(id); }, []);
+  const left = total - (now - timer.startedAt);
+  useEffect(() => {
+    if (left <= 0 && !fired.current && !busy) { fired.current = true; onTimeUp(); }
+  }, [left, busy, onTimeUp]);
+  const hot = left < 5 * 60_000;
+  return (
+    <div className="sticky top-[calc(env(safe-area-inset-top,0px)+57px)] z-20 -mx-4 border-b border-line bg-bg/90 px-4 py-2.5 backdrop-blur-md lg:top-0 lg:mx-0 lg:rounded-b-xl lg:px-5">
+      <div className="flex items-center gap-3">
+        <span className={cn("rounded-md px-2 py-0.5 font-mono text-[12px] tracking-[.1em] uppercase", hot ? "bg-fg text-bg" : "border border-line-2 text-fg-3")}>{t("экзамен", "exam")}</span>
+        <span className={cn("font-mono text-[22px] font-semibold tabular-nums", hot && "[animation:blink_1s_steps(2)_infinite]")}>{left > 0 ? mmss(left) : "00:00"}</span>
+        <span className="flex-1" />
+        <span className="text-[12.5px] text-fg-3">{left > 0 ? t(`из ${timer.minutes} мин`, `of ${timer.minutes} min`) : t("время вышло — проверяю", "time's up — marking")}</span>
+      </div>
+      <div className="mt-2 h-1 overflow-hidden rounded-sm bg-line">
+        <i className={cn("block h-full", hot ? "bg-fg" : "bg-accent")} style={{ width: `${Math.max(0, Math.min(100, (left / total) * 100))}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/** Итог режима экзамена: затраченное время и примерный перевод в стобалльную шкалу */
+function ExamSummary({ timer, got, max }: { timer: NonNullable<Variant["timer"]>; got: number; max: number }) {
+  const t = useT();
+  const spent = (timer.finishedAt || Date.now()) - timer.startedAt;
+  const test = max ? Math.round((got / max) * 100) : 0;
+  return (
+    <div className="grid basis-full grid-cols-2 gap-2.5 pt-2">
+      <div className="rounded-xl border border-line px-4 py-3">
+        <span className="block font-mono text-[11.5px] tracking-[.1em] text-fg-3 uppercase">{t("время", "time")}</span>
+        <b className="font-mono text-[22px]">{mmss(Math.min(spent, timer.minutes * 60_000))}</b>
+        <span className="text-[12.5px] text-fg-3"> / {timer.minutes}:00</span>
+      </div>
+      <div className="rounded-xl border border-line px-4 py-3">
+        <span className="block font-mono text-[11.5px] tracking-[.1em] text-fg-3 uppercase">{t("тестовый балл", "test score")}</span>
+        <b className="font-display text-[22px] font-black">≈ {test}</b><span className="text-[12.5px] text-fg-3"> / 100</span>
+      </div>
+      <p className="col-span-2 text-[12px] leading-snug text-fg-3">
+        {t("Примерный перевод по доле набранных баллов. Официальная шкала ФИПИ нелинейная и считается для полного варианта, поэтому настоящий балл может отличаться.",
+          "A rough conversion from the share of points scored. The official FIPI scale is non-linear and applies to a full paper, so your real score may differ.")}
+      </p>
     </div>
   );
 }
@@ -179,11 +245,15 @@ function Solve({ v }: { v: Variant }) {
 
   const setGiven = (n: number, val: string) => patch({ variant: { ...v, given: { ...v.given, [n]: val } } });
 
+  const checking = useRef(false);
   const check = async () => {
+    if (checking.current) return;
+    checking.current = true;
     setBusy(true);
+    const cur = useApp.getState().variant || v; // свежие ответы — проверка может запуститься по таймеру
     const results: Variant["results"] = {};
-    for (const t of v.tasks) {
-      const given = (v.given[t.n] || "").trim();
+    for (const t of cur.tasks) {
+      const given = (cur.given[t.n] || "").trim();
       if (t.type === "short") {
         const ok = isCorrect([t.answer, ...t.alt], given);
         results[t.n] = { score: ok ? t.max : 0 };
@@ -217,13 +287,19 @@ Return ONLY JSON: {"score": integer from 0 to ${t.max}, "feedback": "2–4 sente
       }
     }
     touchStreak();
-    patch({ variant: { ...useApp.getState().variant!, results, done: true } });
-    setBusy(false); setStatus("");
+    const latest = useApp.getState().variant!;
+    patch({ variant: { ...latest, results, done: true, ...(latest.timer ? { timer: { ...latest.timer, finishedAt: latest.timer.finishedAt || Date.now() } } : {}) } });
+    setBusy(false); setStatus(""); checking.current = false;
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <div className="pt-1 lg:max-w-[760px] lg:pt-4">
+      {v.timer && !v.done && <ExamTimer timer={v.timer} busy={busy} onTimeUp={() => {
+        const cur = useApp.getState().variant;
+        if (cur?.timer && !cur.done) patch({ variant: { ...cur, timer: { ...cur.timer, finishedAt: Date.now() } } });
+        check();
+      }} />}
       {v.done ? (
         <div className="flex flex-wrap items-end gap-[18px] border-b border-line pt-[22px] pb-4">
           <div ref={scoreRef} className="font-display text-[clamp(64px,20vw,92px)] leading-[.82] font-black tracking-[-.05em]">
@@ -236,6 +312,7 @@ Return ONLY JSON: {"score": integer from 0 to ${t.max}, "feedback": "2–4 sente
           <div className="h-1 basis-full overflow-hidden rounded-sm bg-line">
             <motion.i className="block h-full bg-accent" initial={{ width: 0 }} animate={{ width: `${max ? (got / max) * 100 : 0}%` }} transition={{ duration: 1.1, ease: [0.2, 0.8, 0.2, 1], delay: 0.2 }} />
           </div>
+          {v.timer && <ExamSummary timer={v.timer} got={got} max={max} />}
         </div>
       ) : (
         <div className="pt-5"><Meta items={[subjName(v.subj), `${v.tasks.length} ${pl(v.tasks.length, ["задание", "задания", "заданий"], ["task", "tasks"])}`, tr("ответы сохраняются", "answers are saved")]} /></div>

@@ -13,6 +13,7 @@
 //   AI_BASE_URL          — другой адрес API
 //   AI_MAX_TOKENS        — предел длины ответа, по умолчанию 4000
 //   RATE_LIMIT_PER_MIN   — запросов в минуту с одного адреса, по умолчанию 20
+//   AI_VISION_MODEL      — модель для запросов с фото (по умолчанию та же, Gemini 2.5 Flash понимает картинки)
 
 const KEY = String(process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY || process.env.ODIROUTER_API_KEY || "")
   .trim().replace(/^["'`]+|["'`]+$/g, "").replace(/^Bearer\s+/i, "").trim();
@@ -24,6 +25,29 @@ const MAX_TOKENS = Number(process.env.AI_MAX_TOKENS || 4000);
 const RATE = Number(process.env.RATE_LIMIT_PER_MIN || 20);
 const MAX_CHARS = 60000;       // суммарная длина сообщений в одном запросе
 const MAX_MESSAGES = 30;
+const MAX_IMAGES = 2;          // фото задания в одном запросе
+const MAX_IMAGE_CHARS = 2_800_000; // ~2 МБ картинки в base64
+const VISION_MODEL = process.env.AI_VISION_MODEL || MODEL;
+
+// Сообщение: строка или массив частей OpenAI (текст и картинка data:image/…;base64)
+function cleanMessage(m, counter){
+  if(!m || !["system", "user", "assistant"].includes(m.role)) return null;
+  if(typeof m.content === "string") return {role:m.role, content:m.content};
+  if(m.role !== "user" || !Array.isArray(m.content)) return null;
+  const parts = [];
+  for(const p of m.content){
+    if(p?.type === "text" && typeof p.text === "string") parts.push({type:"text", text:p.text});
+    else if(p?.type === "image_url" && typeof p.image_url?.url === "string"
+      && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.image_url.url.slice(0, 64) + "=")
+      && p.image_url.url.length <= MAX_IMAGE_CHARS && counter.images < MAX_IMAGES){
+      counter.images++;
+      parts.push({type:"image_url", image_url:{url:p.image_url.url}});
+    }
+  }
+  return parts.length ? {role:"user", content:parts} : null;
+}
+const textLength = m => typeof m.content === "string" ? m.content.length
+  : m.content.reduce((n, p) => n + (p.type === "text" ? p.text.length : 0), 0);
 
 // Простой лимит частоты. Живёт в памяти одного экземпляра функции —
 // не идеальная защита, но отсекает случайные «зацикленные» запросы.
@@ -82,11 +106,12 @@ export default {
     try{ body = await req.json(); }
     catch{ return json({error:"Некорректный запрос"}, 400); }
 
+    const counter = {images:0};
     const messages = (Array.isArray(body?.messages) ? body.messages : [])
-      .filter(m => m && ["system", "user", "assistant"].includes(m.role) && typeof m.content === "string")
       .slice(-MAX_MESSAGES)
-      .map(m => ({role:m.role, content:m.content}));
-    const size = messages.reduce((n, m) => n + m.content.length, 0);
+      .map(m => cleanMessage(m, counter))
+      .filter(Boolean);
+    const size = messages.reduce((n, m) => n + textLength(m), 0);
     if(!messages.length) return json({error:"Пустой запрос"}, 400);
     if(size > MAX_CHARS) return json({error:"Запрос слишком длинный"}, 413);
 
@@ -103,7 +128,7 @@ export default {
           "http-referer":"https://" + (req.headers.get("host") || "hundo.vercel.app"),
           "x-title":"HUNDO",
         },
-        body:JSON.stringify({model:MODEL, stream:true, temperature, max_tokens:MAX_TOKENS, messages}),
+        body:JSON.stringify({model:counter.images ? VISION_MODEL : MODEL, stream:true, temperature, max_tokens:MAX_TOKENS, messages}),
       });
     }catch(e){
       return json({error:"Сервис ИИ не отвечает"}, 502);

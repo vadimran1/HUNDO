@@ -9,19 +9,24 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = path.join(root, "dist");
 const PORT = Number(process.env.PORT || 3000);
-const chat = (await import("../api/chat.js")).default;
+// все функции из папки api/: /api/chat → api/chat.js, /api/push → api/push.js …
+const API = {};
+for (const f of fs.readdirSync(path.join(root, "api"))) {
+  if (f.endsWith(".js") && !f.startsWith("_")) API[f.slice(0, -3)] = (await import("../api/" + f)).default;
+}
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8", ".webmanifest": "application/manifest+json; charset=utf-8",
   ".png": "image/png", ".webp": "image/webp", ".svg": "image/svg+xml", ".woff2": "font/woff2" };
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
-  if (url.pathname === "/api/chat") {
+  const fn = url.pathname.startsWith("/api/") && API[url.pathname.slice(5)];
+  if (fn) {
     const chunks = [];
     for await (const c of req) chunks.push(c);
     const headers = new Headers();
     for (const [k, v] of Object.entries(req.headers)) if (typeof v === "string") headers.set(k, v);
-    const r = await chat.fetch(new Request(url, { method: req.method, headers, body: ["GET", "HEAD"].includes(req.method) ? undefined : Buffer.concat(chunks) }));
+    const r = await fn.fetch(new Request(url, { method: req.method, headers, body: ["GET", "HEAD"].includes(req.method) ? undefined : Buffer.concat(chunks) }));
     res.writeHead(r.status, Object.fromEntries(r.headers));
     if (r.body) for await (const chunk of r.body) res.write(chunk);
     return res.end();

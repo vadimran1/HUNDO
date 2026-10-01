@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
-import { useApp } from "@/lib/store";
+import { useApp, useUI } from "@/lib/store";
+import { Flashcards } from "./Flashcards";
 import { TASKS, localTask, type Task } from "@/lib/tasks";
 import { subjName, subjNameRu, fipiBankUrl, sdamUrl } from "@/lib/data";
 import { useT } from "@/lib/i18n";
@@ -9,7 +10,7 @@ import { askAI, aiErrorText, useAiReady } from "@/lib/ai";
 import { burst, shake } from "@/lib/fx";
 import { cellStyle, isCorrect } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Label, Typing, Verdict } from "@/components/ui/controls";
+import { Label, Segmented, Typing, Verdict } from "@/components/ui/controls";
 
 function pick(subjects: string[], answered: Record<string, boolean>, skip?: string): Task {
   const set = new Set(subjects);
@@ -22,6 +23,20 @@ function pick(subjects: string[], answered: Record<string, boolean>, skip?: stri
 }
 
 export function TrainScreen() {
+  const mode = useUI(s => s.trainMode);
+  const t = useT();
+  return (
+    <div className="lg:max-w-[720px]">
+      <div className="mt-5 max-w-[360px] lg:mt-6">
+        <Segmented id="trainmode" value={mode} onChange={v => useUI.setState({ trainMode: v })}
+          items={[["tasks", t("Задания", "Tasks")], ["cards", t("Карточки", "Flashcards")]]} />
+      </div>
+      {mode === "tasks" ? <TaskTrainer /> : <Flashcards />}
+    </div>
+  );
+}
+
+function TaskTrainer() {
   const { subjects, answered, stats, exam, record } = useApp();
   const ready = useAiReady();
   const t = useT();
@@ -82,7 +97,7 @@ Briefly explain why the correct answer is what it is. If the student was wrong, 
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div key={task.id} className="lg:max-w-[720px] lg:pt-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
+      <motion.div key={task.id} className="lg:pt-2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
         <div className="mt-5 mb-3.5 flex flex-wrap items-center gap-2 font-mono text-[12px] tracking-[.08em] text-fg-3 uppercase">
           <b className="font-bold text-fg">{subjName(task.subj)}</b>
           <span className="h-px w-3.5 bg-line-2" />
