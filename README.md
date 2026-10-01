@@ -4,9 +4,20 @@
 
 Школьный проект: приложение для подготовки к ЕГЭ и ОГЭ с ИИ-репетитором. Ставится на iPhone и Android с сайта, без App Store и Google Play (PWA).
 
-- **Сайт для установки** — `/`: кнопка установки под платформу, шаги, QR-код.
-- **Приложение** — `/app/`: тренажёр, варианты от ИИ, разбор заданий, чат, прогресс, план.
-- **Сервер ИИ** — `/api/chat`: функция Vercel, хранит ключ и передаёт запросы в OpenRouter.
+- **Сайт** — `/` (русский) и `/en` (английский): установка на телефон, QR-код, версия для компьютера, промо-ролик.
+- **Приложение** — `/app/`: тренажёр, варианты от ИИ, разбор заданий, чат, прогресс, план. На телефоне — нижние вкладки, на компьютере (экран от 1024 px) — боковое меню, широкие экраны и горячие клавиши.
+- **Сервер ИИ** — `/api/chat`: функция Vercel, хранит ключ и передаёт запросы в OdiRouter или OpenRouter.
+- **Промо-ролик** — `video/`: 30 секунд, сделан кодом на Remotion, русская и английская версии.
+
+## Два языка
+Переключатель **RU / EN** — в шапке сайта, на титульном экране, в боковом меню и в настройках. Выбор общий для сайта и приложения.
+- Тексты переведены прямо в коде парами: `t("Главная", "Home")` (см. `src/lib/i18n.ts`).
+- Задания тренажёра переведены в `src/lib/tasks.ts` (блок `EN`); в английском режиме принимаются ответы на обоих языках.
+- В английском режиме ИИ отвечает по-английски, а русские термины даёт в скобках.
+
+## Компьютер
+- На компьютере сайт не предлагает «установить», а даёт **«Скачать на телефон»** (окно с QR-кодом) и **«Веб-версия»**.
+- Веб-версия — то же приложение `/app/` в браузере: клавиши **1–5** переключают разделы, **Enter** проверяет ответ и открывает следующее задание, настройки открываются панелью справа.
 
 ## Стек
 
@@ -15,6 +26,7 @@
 | Интерфейс | React 19, TypeScript, Vite |
 | Стили | Tailwind CSS 4, монохромный стиль по рекомендациям UI/UX Pro Max |
 | Анимации | Motion (motion.dev): переходы экранов, шторки со смахиванием, общие layout-анимации |
+| Ролик | Remotion 4 (видео из React-кода), музыка синтезирована на Python (numpy), сборка звука — FFmpeg |
 | Компоненты | Magic UI и shadcn/ui из каталога 21st.dev: Iphone, BlurFade, NumberTicker, BorderBeam, Marquee, AnimatedGridPattern, Button |
 | PWA | vite-plugin-pwa (Workbox): офлайн-режим и плашка «Вышла новая версия» |
 | ИИ | OdiRouter (или OpenRouter) через серверную функцию Vercel, ответ приходит потоком |
@@ -76,7 +88,9 @@ Vercel → Project → **Settings → Domains**. Если адрес `*.vercel.a
 | Задания тренажёра | `src/lib/tasks.ts`: скопируйте запись и поменяйте поля |
 | Цвета и шрифты | `src/styles/globals.css` |
 | Тексты сайта для установки | `src/landing/Landing.tsx` |
-| Скриншоты на сайте | `public/screens/*.webp` (780×1688) |
+| Переводы | рядом с текстом: `t("рус", "eng")`; язык — `src/lib/i18n.ts` |
+| Скриншоты на сайте | `public/screens/ru/`, `public/screens/en/` — пересоздаются скриптом `scripts/shots.mjs` |
+| Промо-ролик | `video/src/Promo.tsx` (сцены и тексты), `video/music.py` (музыка) |
 | Иконка | `public/icons/` |
 | Промпт репетитора | `src/lib/ai.ts` → `SYSTEM_PROMPT` |
 
@@ -88,6 +102,20 @@ npm run dev          # http://localhost:5173 — сайт, /app/ — прило�
 
 npm run build        # сборка в dist
 OPENROUTER_API_KEY=ваш_ключ node scripts/serve.mjs   # http://localhost:3000 — всё вместе, с ИИ
+```
+
+## Промо-ролик
+```bash
+cd video && npm install
+npm run studio       # предпросмотр в браузере, можно листать кадры
+npm run render       # музыка + оба ролика со звуком → public/promo/hundo-ru.mp4, hundo-en.mp4
+```
+Нужны Python 3 с numpy и scipy (для музыки) и FFmpeg (для звуковой дорожки).
+
+## Скриншоты
+```bash
+npm run build && PORT=4173 node scripts/serve.mjs   # в отдельном окне
+node scripts/shots.mjs && python3 scripts/webp.py   # телефон и компьютер, RU и EN
 ```
 
 ## Структура
@@ -102,6 +130,8 @@ src/components/ui/       кнопка shadcn/ui, переключатели
 src/lib/                 данные, хранилище, ИИ, эффекты, банк заданий
 vite.config.ts           сборка, PWA, манифест, версия из коммита
 vercel.json              настройки Vercel
+video/                   промо-ролик (Remotion): сцены, музыка, рендер
+scripts/                 локальный сервер, скриншоты
 ```
 
 ## Источники заданий
@@ -109,4 +139,4 @@ vercel.json              настройки Vercel
 - [Сдам ГИА: ЕГЭ](https://ege.sdamgia.ru/), [Сдам ГИА: ОГЭ](https://oge.sdamgia.ru/)
 
 ## Благодарности и лицензии
-Magic UI (MIT), shadcn/ui (MIT), Motion (MIT), Lucide (ISC), Fontsource: Unbounded, Onest, JetBrains Mono (OFL), qrcode-generator (MIT). Дизайн-рекомендации — UI/UX Pro Max.
+Magic UI (MIT), shadcn/ui (MIT), Motion (MIT), Remotion (Remotion License — бесплатно для частных лиц и небольших команд), Lucide (ISC), Fontsource: Unbounded, Onest, JetBrains Mono (OFL), qrcode-generator (MIT). Музыка ролика синтезирована кодом, чужих сэмплов нет. Дизайн-рекомендации — UI/UX Pro Max.

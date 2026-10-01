@@ -2,7 +2,9 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import { useApp, useUI } from "@/lib/store";
-import { APP_NAME, SUBJECTS } from "@/lib/data";
+import { APP_NAME, subjects as subjectList } from "@/lib/data";
+import { useT, examLabel } from "@/lib/i18n";
+import { LangSwitch } from "../Shell";
 import type { SubjectId } from "@/lib/tasks";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/controls";
@@ -33,7 +35,7 @@ export function Onboarding() {
       <AnimatePresence mode="wait" custom={dir} initial={false}>
         <motion.div key={step} custom={dir} variants={slide} initial="enter" animate="center" exit="exit"
           transition={{ duration: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-          className="relative z-10 mx-auto max-w-[560px] px-4">
+          className={cn("relative z-10 mx-auto max-w-[560px] px-4", step === 0 && "lg:max-w-[760px]")}>
           {step === 0 && <Title onStart={() => set(1)} />}
           {step === 1 && <ExamStep onBack={() => set(0)} onNext={() => set(2)} />}
           {step === 2 && <SubjectsStep onBack={() => set(1)} onNext={() => set(3)} />}
@@ -45,16 +47,18 @@ export function Onboarding() {
 }
 
 function Title({ onStart }: { onStart: () => void }) {
+  const t = useT();
   return (
     <section className="flex min-h-[calc(100dvh-env(safe-area-inset-top,0px)-24px)] flex-col pt-4">
+      <div className="flex justify-end"><LangSwitch className="onb" /></div>
       <div className="flex flex-1 flex-col justify-center gap-6 py-8">
         <BlurFade delay={0.05} duration={0.6}><Wordmark text={APP_NAME} /></BlurFade>
         <BlurFade delay={0.25}>
-          <h1 className="m-0 max-w-[22ch] text-[clamp(20px,5.6vw,26px)] leading-tight font-semibold tracking-[-.01em]">ИИ-репетитор для подготовки к ЕГЭ и ОГЭ</h1>
+          <h1 className="m-0 max-w-[22ch] text-[clamp(20px,5.6vw,26px)] leading-tight font-semibold tracking-[-.01em] lg:text-[32px]">{t("ИИ-репетитор для подготовки к ЕГЭ и ОГЭ", "AI tutor for the Russian state exams EGE and OGE")}</h1>
         </BlurFade>
       </div>
       <BlurFade delay={0.4} className="pb-6">
-        <Button className="w-full" size="lg" onClick={onStart}>Начать <ArrowRight /></Button>
+        <Button className="w-full lg:w-auto lg:min-w-[260px]" size="lg" onClick={onStart}>{t("Начать", "Get started")} <ArrowRight /></Button>
       </BlurFade>
     </section>
   );
@@ -76,11 +80,12 @@ const H = ({ children }: { children: React.ReactNode }) =>
   <h2 className="mb-2.5 font-display text-[clamp(24px,7vw,32px)] leading-[1.12] font-bold tracking-[-.02em]">{children}</h2>;
 const P = ({ children }: { children: React.ReactNode }) => <p className="mb-6 text-fg-2">{children}</p>;
 
-function Nav({ onBack, onNext, next = "Дальше" }: { onBack: () => void; onNext: () => void; next?: string }) {
+function Nav({ onBack, onNext, next }: { onBack: () => void; onNext: () => void; next?: string }) {
+  const t = useT();
   return (
     <div className="mt-6 flex gap-2">
-      <Button variant="outline" onClick={onBack}>Назад</Button>
-      <Button className="flex-1" onClick={onNext}>{next} <ArrowRight /></Button>
+      <Button variant="outline" onClick={onBack}>{t("Назад", "Back")}</Button>
+      <Button className="flex-1" onClick={onNext}>{next || t("Дальше", "Next")} <ArrowRight /></Button>
     </div>
   );
 }
@@ -88,15 +93,16 @@ function Nav({ onBack, onNext, next = "Дальше" }: { onBack: () => void; on
 function ExamStep({ onBack, onNext }: { onBack: () => void; onNext: () => void }) {
   const exam = useApp(s => s.exam);
   const patch = useApp(s => s.patch);
+  const t = useT();
   const opts = [
-    { v: "ЕГЭ" as const, sub: "11 класс", date: "2027-05-27" },
-    { v: "ОГЭ" as const, sub: "9 класс", date: "2027-05-25" },
+    { v: "ЕГЭ" as const, sub: t("11 класс", "Unified State Exam · grade 11"), date: "2027-05-27" },
+    { v: "ОГЭ" as const, sub: t("9 класс", "Basic State Exam · grade 9"), date: "2027-05-25" },
   ];
   return (
     <>
       <Steps n={1} />
-      <H>Какой экзамен сдаёте?</H>
-      <P>От этого зависят формат заданий, источники и дата.</P>
+      <H>{t("Какой экзамен сдаёте?", "Which exam are you taking?")}</H>
+      <P>{t("От этого зависят формат заданий, источники и дата.", "This sets the task format, the sources and the date.")}</P>
       <div className="grid gap-2.5">
         {opts.map(o => {
           const on = exam === o.v;
@@ -104,7 +110,7 @@ function ExamStep({ onBack, onNext }: { onBack: () => void; onNext: () => void }
             <motion.button key={o.v} whileTap={{ scale: 0.98 }} aria-pressed={on}
               onClick={() => patch({ exam: o.v, examDate: o.date })}
               className={cn("flex items-center gap-4 rounded-[14px] border p-[18px] text-left transition-colors", on ? "border-fg bg-bg-2" : "border-line-2 bg-bg")}>
-              <b className="min-w-[84px] font-display text-[26px] font-black tracking-[-.02em]">{o.v}</b>
+              <b className="min-w-[84px] font-display text-[26px] font-black tracking-[-.02em]">{examLabel(o.v)}</b>
               <span className="text-[13.5px] text-fg-2">{o.sub}</span>
               <i className={cn("ml-auto grid size-5 flex-none place-items-center rounded-full border-[1.5px]", on ? "border-fg" : "border-line-2")}>
                 {on && <motion.span layoutId="exam-dot" className="size-2.5 rounded-full bg-accent" />}
@@ -124,13 +130,14 @@ function SubjectsStep({ onBack, onNext }: { onBack: () => void; onNext: () => vo
   const [pick, setPick] = useState<Set<SubjectId>>(new Set(subjects));
   const [hint, setHint] = useState("");
   const chips = useRef<HTMLDivElement>(null);
+  const t = useT();
   return (
     <>
       <Steps n={2} />
-      <H>Какие предметы?</H>
-      <P>Выберите все, что сдаёте. Задания, варианты и план будут по ним.</P>
+      <H>{t("Какие предметы?", "Which subjects?")}</H>
+      <P>{t("Выберите все, что сдаёте. Задания, варианты и план будут по ним.", "Pick every subject you're taking. Tasks, mock exams and your plan will follow them.")}</P>
       <div ref={chips} className="flex flex-wrap gap-2">
-        {SUBJECTS.map(s => (
+        {subjectList().map(s => (
           <Chip key={s.id} pressed={pick.has(s.id)} onClick={() => {
             const n = new Set(pick); n.has(s.id) ? n.delete(s.id) : n.add(s.id); setPick(n); setHint("");
           }}>{s.name}</Chip>
@@ -138,7 +145,7 @@ function SubjectsStep({ onBack, onNext }: { onBack: () => void; onNext: () => vo
       </div>
       <p className="mt-2 min-h-5 text-[12.5px] text-fg-3">{hint}</p>
       <Nav onBack={onBack} onNext={() => {
-        if (!pick.size) { setHint("Выберите хотя бы один предмет."); shake(chips.current); return; }
+        if (!pick.size) { setHint(t("Выберите хотя бы один предмет.", "Pick at least one subject.")); shake(chips.current); return; }
         patch({ subjects: [...pick] }); onNext();
       }} />
     </>
@@ -150,17 +157,18 @@ function DateStep({ onBack }: { onBack: () => void }) {
   const patch = useApp(s => s.patch);
   const touch = useApp(s => s.touchStreak);
   const [d, setD] = useState(examDate);
+  const t = useT();
   return (
     <>
       <Steps n={3} />
-      <H>Когда экзамен?</H>
-      <P>Приложение будет считать дни и подгонять план под оставшееся время.</P>
+      <H>{t("Когда экзамен?", "When is the exam?")}</H>
+      <P>{t("Приложение будет считать дни и подгонять план под оставшееся время.", "The app counts down the days and fits your plan to the time left.")}</P>
       <label className="block">
-        <span className="mb-2 block text-[13px] font-medium text-fg-3">Дата первого экзамена</span>
+        <span className="mb-2 block text-[13px] font-medium text-fg-3">{t("Дата первого экзамена", "Date of your first exam")}</span>
         <input type="date" className="field" value={d} onChange={e => setD(e.target.value)} />
       </label>
-      <p className="mt-2 text-[12.5px] text-fg-3">Точное расписание публикуют зимой. Дату всегда можно поменять в настройках.</p>
-      <Nav onBack={onBack} next="Начать подготовку" onNext={() => {
+      <p className="mt-2 text-[12.5px] text-fg-3">{t("Точное расписание публикуют зимой. Дату всегда можно поменять в настройках.", "The official timetable comes out in winter. You can change the date in Settings any time.")}</p>
+      <Nav onBack={onBack} next={t("Начать подготовку", "Start preparing")} onNext={() => {
         patch({ examDate: d || examDate, onboarded: true }); touch();
         useUI.setState({ tab: "home", dir: 1, onbStep: 0 }); window.scrollTo(0, 0);
       }} />

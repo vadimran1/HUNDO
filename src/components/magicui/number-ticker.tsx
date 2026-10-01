@@ -1,6 +1,7 @@
 // Компонент NumberTicker из Magic UI (MIT) — опубликован в каталоге 21st.dev, адаптирован под HUNDO.
 "use client"
 
+import { locale } from "@/lib/i18n"
 import { useEffect, useRef, type ComponentPropsWithoutRef } from "react"
 import { useInView, useMotionValue, useSpring } from "motion/react"
 
@@ -51,7 +52,7 @@ export function NumberTicker({
     () =>
       springValue.on("change", (latest) => {
         if (ref.current) {
-          ref.current.textContent = Intl.NumberFormat("ru-RU", {
+          ref.current.textContent = Intl.NumberFormat(locale(), {
             minimumFractionDigits: decimalPlaces,
             maximumFractionDigits: decimalPlaces,
           }).format(Number(latest.toFixed(decimalPlaces)))

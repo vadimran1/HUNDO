@@ -2,17 +2,30 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, Plus, Minus } from "lucide-react";
 import { useApp, useUI, type VTask, type Variant } from "@/lib/store";
-import { SUBJ_NAME, fipiBankUrl, sdamUrl } from "@/lib/data";
+import { subjName, subjNameRu, fipiBankUrl, sdamUrl } from "@/lib/data";
+import { useT, L, isEn, pl, examLabel } from "@/lib/i18n";
 import { askAI, aiErrorText, AIError, useAiReady } from "@/lib/ai";
 import { burst, shake } from "@/lib/fx";
-import { cellStyle, examYear, isCorrect, plural } from "@/lib/utils";
+import { cellStyle, examYear, isCorrect } from "@/lib/utils";
 import type { SubjectId } from "@/lib/tasks";
 import { Button } from "@/components/ui/button";
 import { Chip, Label, Segmented, Switch, Verdict } from "@/components/ui/controls";
 import { NumberTicker } from "@/components/magicui/number-ticker";
 
 function variantPrompt(exam: string, subj: string, count: number, withOpen: boolean) {
-  return `Составь тренировочный вариант ${exam}-${examYear()} по предмету «${SUBJ_NAME[subj]}».
+  if (isEn()) return `Create a practice version of the Russian ${exam} ${examYear()} exam (${examLabel(exam)}) in the subject "${subjNameRu(subj)}" (${subjName(subj)}).
+Requirements:
+— ${count} short-answer tasks in the Part 1 format of the current FIPI codifier and specification;
+— different topics and difficulty levels, ordered as in a real exam paper;
+— write every task, topic and explanation in English${subj === "rus" ? ", but keep the Russian words, sentences and spelling rules being tested in Russian" : ""};
+— each answer must be a number, word, short phrase or digit sequence that can be checked automatically;
+— if the task asks to choose numbers, list the options in the task text as 1), 2), 3)…;
+${withOpen ? `— add 1 extended-answer task at the end (like Part 2); put the model answer and marking criteria in "answer" and the maximum score in "max";\n` : ""}— use only verified facts, dates and formulas; do not invent events.
+
+Return ONLY a JSON array, no comments and no markdown:
+[{"n":1,"type":"short","topic":"codifier topic","q":"task text","answer":"correct answer","alt":["other accepted spellings"],"max":1,"exp":"solution in 2–3 sentences"}]
+For the extended-answer task use "type":"open".`;
+  return `Составь тренировочный вариант ${exam}-${examYear()} по предмету «${subjNameRu(subj)}».
 Требования:
 — ${count} заданий с кратким ответом в формате части 1 по актуальному кодификатору и спецификации ФИПИ;
 — задания разных тем и разного уровня сложности, порядок как в настоящем варианте;
@@ -28,15 +41,15 @@ ${withOpen ? `— добавь в конец 1 задание с развёрн�
 function parseVariant(text: string): VTask[] {
   const t = text.replace(/```(?:json)?/gi, "");
   const a = t.indexOf("["), b = t.lastIndexOf("]");
-  if (a < 0 || b <= a) throw new Error("ИИ вернул ответ не в том формате. Попробуйте ещё раз.");
+  if (a < 0 || b <= a) throw new Error(L("ИИ вернул ответ не в том формате. Попробуйте ещё раз.", "The AI replied in the wrong format. Please try again."));
   let arr: unknown;
-  try { arr = JSON.parse(t.slice(a, b + 1)); } catch { throw new Error("ИИ прислал вариант с ошибкой в разметке. Нажмите «Составить вариант» ещё раз."); }
+  try { arr = JSON.parse(t.slice(a, b + 1)); } catch { throw new Error(L("ИИ прислал вариант с ошибкой в разметке. Нажмите «Составить вариант» ещё раз.", "The AI sent a paper with broken formatting. Press “Create mock exam” again.")); }
   const tasks = (Array.isArray(arr) ? arr : []).filter((x: any) => x && x.q && x.answer).map((x: any, i: number): VTask => ({
-    n: i + 1, type: x.type === "open" ? "open" : "short", topic: String(x.topic || "Задание"), q: String(x.q),
+    n: i + 1, type: x.type === "open" ? "open" : "short", topic: String(x.topic || L("Задание", "Task")), q: String(x.q),
     answer: String(x.answer), alt: Array.isArray(x.alt) ? x.alt.map(String) : [],
     max: Math.max(1, parseInt(x.max, 10) || 1), exp: String(x.exp || ""),
   }));
-  if (!tasks.length) throw new Error("В ответе ИИ не нашлось заданий. Попробуйте ещё раз.");
+  if (!tasks.length) throw new Error(L("В ответе ИИ не нашлось заданий. Попробуйте ещё раз.", "No tasks found in the AI reply. Please try again."));
   return tasks;
 }
 
@@ -55,18 +68,19 @@ function Setup() {
   const [log, setLog] = useState<string[]>([]);
   const [err, setErr] = useState("");
   const errRef = useRef<HTMLDivElement>(null);
+  const t = useT();
 
   const generate = async () => {
-    setBusy(true); setErr(""); setLog(["подключаюсь к нейросети"]);
+    setBusy(true); setErr(""); setLog([t("подключаюсь к нейросети", "connecting to the AI")]);
     let acc = "", lastN = 0;
     try {
       const text = await askAI([{ role: "user", content: variantPrompt(exam, subj, +count, open) }], d => {
-        if (!acc) setLog(l => [...l, "нейросеть пишет задания"]);
+        if (!acc) setLog(l => [...l, t("нейросеть пишет задания", "the AI is writing tasks")]);
         acc += d;
         const n = (acc.match(/"q"\s*:/g) || []).length;
-        if (n > lastN) { lastN = n; setLog(l => [...l, `> задание ${String(n).padStart(2, "0")} готово`]); }
+        if (n > lastN) { lastN = n; setLog(l => [...l, `> ${t("задание", "task")} ${String(n).padStart(2, "0")} ${t("готово", "ready")}`]); }
       });
-      setLog(l => [...l, "проверяю формат"]);
+      setLog(l => [...l, t("проверяю формат", "checking the format")]);
       const tasks = parseVariant(text);
       patch({ variant: { subj, exam, created: Date.now(), tasks, given: {}, results: {}, done: false } });
     } catch (e) {
@@ -77,9 +91,9 @@ function Setup() {
   };
 
   if (busy) return (
-    <div className="pt-5">
-      <Meta items={[SUBJ_NAME[subj], `${count} заданий`]} />
-      <h2 className="font-display text-[28px] font-bold tracking-[-.02em]">Собираю вариант</h2>
+    <div className="pt-5 lg:max-w-[720px]">
+      <Meta items={[subjName(subj), `${count} ${pl(+count, ["задание", "задания", "заданий"], ["task", "tasks"])}`]} />
+      <h2 className="font-display text-[28px] font-bold tracking-[-.02em] lg:text-[40px]">{t("Собираю вариант", "Building your paper")}</h2>
       <div className="relative mt-3 h-0.5 overflow-hidden bg-line"><i className="absolute inset-y-0 w-[30%] animate-[scan_1.3s_cubic-bezier(.2,.8,.2,1)_infinite] bg-accent" /></div>
       <div className="mt-3.5 font-mono text-xs leading-[1.7] text-fg-2">
         <AnimatePresence initial={false}>
@@ -100,24 +114,42 @@ function Setup() {
   );
 
   return (
-    <div className="pt-5">
-      <Meta items={["Вариант от ИИ", `${exam} ${examYear()}`]} />
-      <h2 className="font-display text-[clamp(22px,6.4vw,28px)] leading-[1.15] font-bold tracking-[-.02em]">Нейросеть составит вариант, проверит и разберёт ошибки</h2>
+    <div className="pt-5 lg:grid lg:grid-cols-[1fr_340px] lg:gap-14 lg:pt-10">
+      <div>
+        <Meta items={[t("Вариант от ИИ", "AI mock exam"), `${examLabel(exam)} ${examYear()}`]} />
+        <h2 className="font-display text-[clamp(22px,6.4vw,28px)] leading-[1.15] font-bold tracking-[-.02em] lg:text-[40px] lg:leading-[1.08]">{t("Нейросеть составит вариант, проверит и разберёт ошибки", "The AI writes a paper, marks it and explains every mistake")}</h2>
 
-      <div className="mt-6"><Label>Предмет</Label>
-        <div className="flex flex-wrap gap-2">{subjects.map(id => <Chip key={id} pressed={id === subj} onClick={() => setSubj(id)}>{SUBJ_NAME[id]}</Chip>)}</div>
-      </div>
-      <div className="mt-5"><Label>Сколько заданий</Label>
-        <Segmented id="vcount" value={count} onChange={v => setCount(v)} items={[["5", "5"], ["10", "10"], ["15", "15"]]} />
-      </div>
-      <div className="mt-5"><Switch checked={open} onChange={setOpen}>Задание с развёрнутым ответом — ИИ оценит его по критериям</Switch></div>
+        <div className="mt-6 lg:mt-9"><Label>{t("Предмет", "Subject")}</Label>
+          <div className="flex flex-wrap gap-2">{subjects.map(id => <Chip key={id} pressed={id === subj} onClick={() => setSubj(id)}>{subjName(id)}</Chip>)}</div>
+        </div>
+        <div className="mt-5 lg:max-w-[360px]"><Label>{t("Сколько заданий", "Number of tasks")}</Label>
+          <Segmented id="vcount" value={count} onChange={v => setCount(v)} items={[["5", "5"], ["10", "10"], ["15", "15"]]} />
+        </div>
+        <div className="mt-5"><Switch checked={open} onChange={setOpen}>{t("Задание с развёрнутым ответом — ИИ оценит его по критериям", "Extended-answer task — the AI marks it against the criteria")}</Switch></div>
 
-      <Button className="mt-6 w-full" disabled={!ready} onClick={generate}>{ready ? <>Составить вариант <ArrowRight /></> : "ИИ не подключён — см. настройки"}</Button>
-      {err && <div ref={errRef} className="hatch mt-3 rounded-xl border border-line-2 px-4 py-3 text-[13.5px]">{err}</div>}
-      <p className="mt-3.5 text-xs leading-normal text-fg-3">
-        Задания составляет нейросеть, в них бывают неточности. Официальные задания — в <a className="link-u text-fg" href={fipiBankUrl(exam)} target="_blank" rel="noopener">банке ФИПИ</a> и
-        на <a className="link-u text-fg" href={sdamUrl(subj, exam)} target="_blank" rel="noopener">Сдам ГИА</a>.
-      </p>
+        <Button className="mt-6 w-full lg:w-auto lg:min-w-[280px]" size="lg" disabled={!ready} onClick={generate}>{ready ? <>{t("Составить вариант", "Create mock exam")} <ArrowRight /></> : t("ИИ не подключён — см. настройки", "AI not connected — see Settings")}</Button>
+        {err && <div ref={errRef} className="hatch mt-3 rounded-xl border border-line-2 px-4 py-3 text-[13.5px]">{err}</div>}
+        <p className="mt-3.5 text-xs leading-normal text-fg-3">
+          {t("Задания составляет нейросеть, в них бывают неточности. Официальные задания — в ", "Tasks are written by AI and may contain mistakes. Official tasks are in the ")}<a className="link-u text-fg" href={fipiBankUrl(exam)} target="_blank" rel="noopener">{t("банке ФИПИ", "FIPI bank")}</a>{t(" и на ", " and on ")}
+          <a className="link-u text-fg" href={sdamUrl(subj, exam)} target="_blank" rel="noopener">{t("Сдам ГИА", "Sdam GIA")}</a>.
+        </p>
+      </div>
+      <aside className="mt-8 hidden self-start rounded-[18px] border border-line p-6 lg:mt-0 lg:block">
+        <p className="font-mono text-[12px] tracking-[.12em] text-fg-3 uppercase">{t("Как это работает", "How it works")}</p>
+        <ol className="mt-4 grid gap-4">
+          {[
+            [t("Составление", "Writing"), t("ИИ подбирает задания по кодификатору ФИПИ", "The AI picks tasks following the FIPI codifier")],
+            [t("Решение", "Solving"), t("ответы в клеточки, как в бланке; всё сохраняется", "answers go in boxes like the real form; progress is saved")],
+            [t("Проверка", "Marking"), t("часть 1 — автоматически, часть 2 — ИИ по критериям", "Part 1 is auto-checked, Part 2 is marked by AI against criteria")],
+            [t("Разбор", "Review"), t("к каждой ошибке — объяснение и вопрос ИИ", "every mistake gets an explanation and a follow-up with the AI")],
+          ].map(([a, b], i) => (
+            <li key={a} className="flex gap-3.5">
+              <span className="w-7 flex-none font-display text-[18px] leading-none font-black text-fg-3">{String(i + 1).padStart(2, "0")}</span>
+              <span><b className="block text-[14.5px]">{a}</b><span className="text-[13px] text-fg-2">{b}</span></span>
+            </li>
+          ))}
+        </ol>
+      </aside>
     </div>
   );
 }
@@ -138,6 +170,7 @@ function Solve({ v }: { v: Variant }) {
   const [status, setStatus] = useState("");
   const [confirm, setConfirm] = useState(false);
   const scoreRef = useRef<HTMLDivElement>(null);
+  const tr = useT();
 
   let got = 0, max = 0;
   v.tasks.forEach(t => { max += t.max; got += v.results[t.n]?.score || 0; });
@@ -157,11 +190,18 @@ function Solve({ v }: { v: Variant }) {
         record(v.subj, ok); if (!ok) addWeak(v.subj, t.topic);
         continue;
       }
-      if (!given) { results[t.n] = { score: 0, feedback: "Ответа нет." }; addWeak(v.subj, t.topic); continue; }
-      setStatus(`ИИ оценивает задание ${t.n} по критериям`);
+      if (!given) { results[t.n] = { score: 0, feedback: L("Ответа нет.", "No answer.") }; addWeak(v.subj, t.topic); continue; }
+      setStatus(L(`ИИ оценивает задание ${t.n} по критериям`, `The AI is marking task ${t.n} against the criteria`));
       try {
-        const raw = await askAI([{ role: "user", content: `Ты эксперт предметной комиссии ${v.exam}. Оцени ответ ученика по критериям ФИПИ, строго, но справедливо.
-Предмет: ${SUBJ_NAME[v.subj]}
+        const raw = await askAI([{ role: "user", content: isEn() ? `You are an examiner on the ${v.exam} (${examLabel(v.exam)}) subject committee. Mark the student's answer against the FIPI criteria, strictly but fairly.
+Subject: ${subjName(v.subj)}
+Task: ${t.q}
+Model answer and criteria: ${t.answer}
+Maximum score: ${t.max}
+Student's answer: ${given}
+
+Return ONLY JSON: {"score": integer from 0 to ${t.max}, "feedback": "2–4 sentences in English: what earned points and what was missing for full marks"}` : `Ты эксперт предметной комиссии ${v.exam}. Оцени ответ ученика по критериям ФИПИ, строго, но справедливо.
+Предмет: ${subjNameRu(v.subj)}
 Задание: ${t.q}
 Эталон и критерии: ${t.answer}
 Максимальный балл: ${t.max}
@@ -173,7 +213,7 @@ function Solve({ v }: { v: Variant }) {
         results[t.n] = { score, feedback: String(j.feedback || "") };
         if (score < t.max) addWeak(v.subj, t.topic);
       } catch (e) {
-        results[t.n] = { score: 0, feedback: "Не удалось получить оценку ИИ. " + (e instanceof AIError ? aiErrorText(e) : "Ответ пришёл не в том формате.") };
+        results[t.n] = { score: 0, feedback: L("Не удалось получить оценку ИИ. ", "Couldn't get the AI's mark. ") + (e instanceof AIError ? aiErrorText(e) : L("Ответ пришёл не в том формате.", "The reply came in the wrong format.")) };
       }
     }
     touchStreak();
@@ -183,22 +223,22 @@ function Solve({ v }: { v: Variant }) {
   };
 
   return (
-    <div className="pt-1">
+    <div className="pt-1 lg:max-w-[760px] lg:pt-4">
       {v.done ? (
         <div className="flex flex-wrap items-end gap-[18px] border-b border-line pt-[22px] pb-4">
           <div ref={scoreRef} className="font-display text-[clamp(64px,20vw,92px)] leading-[.82] font-black tracking-[-.05em]">
             <NumberTicker value={got} /><small className="text-[.38em] tracking-[-.02em] text-fg-3">/{max}</small>
           </div>
           <div className="min-w-[150px] flex-1 pb-1.5">
-            <b>{SUBJ_NAME[v.subj]} · {v.exam}</b>
-            <div className="text-[13px] text-fg-2">первичных баллов. Темы с ошибками — в «Прогрессе».</div>
+            <b>{subjName(v.subj)} · {examLabel(v.exam)}</b>
+            <div className="text-[13px] text-fg-2">{tr("первичных баллов. Темы с ошибками — в «Прогрессе».", "primary points. Topics with mistakes are in Progress.")}</div>
           </div>
           <div className="h-1 basis-full overflow-hidden rounded-sm bg-line">
             <motion.i className="block h-full bg-accent" initial={{ width: 0 }} animate={{ width: `${max ? (got / max) * 100 : 0}%` }} transition={{ duration: 1.1, ease: [0.2, 0.8, 0.2, 1], delay: 0.2 }} />
           </div>
         </div>
       ) : (
-        <div className="pt-5"><Meta items={[SUBJ_NAME[v.subj], `${v.tasks.length} ${plural(v.tasks.length, "задание", "задания", "заданий")}`, "ответы сохраняются"]} /></div>
+        <div className="pt-5"><Meta items={[subjName(v.subj), `${v.tasks.length} ${pl(v.tasks.length, ["задание", "задания", "заданий"], ["task", "tasks"])}`, tr("ответы сохраняются", "answers are saved")]} /></div>
       )}
 
       {v.tasks.map((t, i) => (
@@ -207,23 +247,25 @@ function Solve({ v }: { v: Variant }) {
           <div className="mb-2.5 flex items-center gap-2.5">
             <span className="min-w-[34px] font-display text-[22px] font-black tracking-[-.03em]">{String(t.n).padStart(2, "0")}</span>
             <span className="min-w-0 flex-1 font-mono text-[11.5px] tracking-[.08em] text-fg-3 uppercase">{t.topic}</span>
-            {t.type === "open" && <span className="flex-none rounded-[5px] border border-accent px-[7px] py-[3px] font-mono text-[11.5px] tracking-[.06em] uppercase">часть 2 · {t.max} б.</span>}
+            {t.type === "open" && <span className="flex-none rounded-[5px] border border-accent px-[7px] py-[3px] font-mono text-[11.5px] tracking-[.06em] uppercase">{tr("часть 2", "part 2")} · {t.max} {tr("б.", "pts")}</span>}
           </div>
-          <p className="mb-3.5 text-base leading-[1.55] break-words whitespace-pre-wrap">{t.q}</p>
+          <p className="mb-3.5 text-base leading-[1.55] break-words whitespace-pre-wrap lg:text-[17px]">{t.q}</p>
           {t.type === "open"
-            ? <textarea className="field" rows={5} placeholder="Развёрнутый ответ" disabled={v.done} value={v.given[t.n] || ""} onChange={e => setGiven(t.n, e.target.value)} />
-            : <input className="cells" style={cellStyle((v.given[t.n] || "").length)} placeholder="Ответ" autoComplete="off" autoCapitalize="off" spellCheck={false} disabled={v.done} value={v.given[t.n] || ""} onChange={e => setGiven(t.n, e.target.value)} />}
+            ? <textarea className="field" rows={5} placeholder={tr("Развёрнутый ответ", "Extended answer")} disabled={v.done} value={v.given[t.n] || ""} onChange={e => setGiven(t.n, e.target.value)} />
+            : <input className="cells" style={cellStyle((v.given[t.n] || "").length)} placeholder={tr("Ответ", "Answer")} autoComplete="off" autoCapitalize="off" spellCheck={false} disabled={v.done} value={v.given[t.n] || ""} onChange={e => setGiven(t.n, e.target.value)} />}
           {v.done && v.results[t.n] && <Result t={t} r={v.results[t.n]} onAsk={() =>
-            askInChat(`Разбери задание из моего варианта (${SUBJ_NAME[v.subj]}, ${v.exam}).\n\nЗадание: ${t.q}\n\nМой ответ: ${v.given[t.n] || "(нет ответа)"}\nПравильный ответ по ключу: ${t.answer}\n\nПочему правильно именно так и где я ошибся? Если ключ сам неверный — скажи об этом.`)} />}
+            askInChat(isEn()
+              ? `Go through a task from my mock exam (${subjName(v.subj)}, ${examLabel(v.exam)}).\n\nTask: ${t.q}\n\nMy answer: ${v.given[t.n] || "(no answer)"}\nCorrect answer from the key: ${t.answer}\n\nWhy is this the right answer and where did I go wrong? If the key itself is wrong, say so.`
+              : `Разбери задание из моего варианта (${subjName(v.subj)}, ${v.exam}).\n\nЗадание: ${t.q}\n\nМой ответ: ${v.given[t.n] || "(нет ответа)"}\nПравильный ответ по ключу: ${t.answer}\n\nПочему правильно именно так и где я ошибся? Если ключ сам неверный — скажи об этом.`)} />}
         </motion.div>
       ))}
 
       <div className="mt-1.5 flex gap-2">
-        {!v.done && <Button className="flex-1" disabled={busy} onClick={check}>{busy ? "Проверяю…" : <>Проверить вариант <ArrowRight /></>}</Button>}
+        {!v.done && <Button className="flex-1" disabled={busy} onClick={check}>{busy ? tr("Проверяю…", "Marking…") : <>{tr("Проверить вариант", "Mark my paper")} <ArrowRight /></>}</Button>}
         <Button variant="outline" className={v.done ? "flex-1" : ""} onClick={e => {
           if (!v.done && !confirm) { setConfirm(true); shake(e.currentTarget); setTimeout(() => setConfirm(false), 3500); return; }
           patch({ variant: null });
-        }}>{confirm ? "Точно бросить?" : "Новый вариант"}</Button>
+        }}>{confirm ? tr("Точно бросить?", "Really give up?") : tr("Новый вариант", "New paper")}</Button>
       </div>
       {status && <p className="mt-3 font-mono text-xs text-fg-2">{status}</p>}
     </div>
@@ -232,19 +274,22 @@ function Solve({ v }: { v: Variant }) {
 
 function Result({ t, r, onAsk }: { t: VTask; r: { score: number; feedback?: string }; onAsk: () => void }) {
   const [open, setOpen] = useState(false);
+  const tr = useT();
   const kind = r.score >= t.max ? "ok" : r.score > 0 ? "part" : "bad";
-  const title = t.type === "open" ? `${r.score} из ${t.max} ${plural(t.max, "балла", "баллов", "баллов")}` : r.score ? "Верно" : "Неверно";
+  const title = t.type === "open"
+    ? tr(`${r.score} из ${t.max} ${pl(t.max, ["балла", "баллов", "баллов"], ["", ""])}`, `${r.score} of ${t.max} points`)
+    : r.score ? tr("Верно", "Correct") : tr("Неверно", "Wrong");
   return (
     <>
-      <Verdict kind={kind} title={title}>{t.type === "open" ? r.feedback : r.score ? undefined : `Правильный ответ: ${t.answer}`}</Verdict>
+      <Verdict kind={kind} title={title}>{t.type === "open" ? r.feedback : r.score ? undefined : `${tr("Правильный ответ", "Correct answer")}: ${t.answer}`}</Verdict>
       <button onClick={() => setOpen(o => !o)} aria-expanded={open} className="mt-2.5 inline-flex items-center gap-1.5 text-[13.5px] font-semibold text-fg-2">
-        Разбор {open ? <Minus className="size-3.5 text-fg-3" /> : <Plus className="size-3.5 text-fg-3" />}
+        {tr("Разбор", "Solution")} {open ? <Minus className="size-3.5 text-fg-3" /> : <Plus className="size-3.5 text-fg-3" />}
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }} className="overflow-hidden">
             {t.exp && <div className="mt-2.5 rounded-xl bg-bg-2 px-4 py-3.5 text-sm leading-relaxed text-fg-2">{t.exp}</div>}
-            <Button variant="secondary" size="sm" className="mt-2.5" onClick={onAsk}>Спросить ИИ <ArrowRight /></Button>
+            <Button variant="secondary" size="sm" className="mt-2.5" onClick={onAsk}>{tr("Спросить ИИ", "Ask the AI")} <ArrowRight /></Button>
           </motion.div>
         )}
       </AnimatePresence>

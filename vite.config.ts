@@ -42,7 +42,7 @@ export default defineConfig({
         start_url: "/app/",
         scope: "/",
         display: "standalone",
-        orientation: "portrait",
+        orientation: "any",
         background_color: "#0a0a0a",
         theme_color: "#0a0a0a",
         categories: ["education"],
@@ -52,9 +52,10 @@ export default defineConfig({
           { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
         screenshots: [
-          { src: "/screens/home.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Главная: дни до экзамена" },
-          { src: "/screens/variant.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Вариант от ИИ с проверкой" },
-          { src: "/screens/chat.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "ИИ-репетитор разбирает ошибку" },
+          { src: "/screens/ru/home.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Главная: дни до экзамена" },
+          { src: "/screens/ru/variant.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "Вариант от ИИ с проверкой" },
+          { src: "/screens/ru/chat.webp", sizes: "780x1688", type: "image/webp", form_factor: "narrow", label: "ИИ-репетитор разбирает ошибку" },
+          { src: "/screens/ru/desktop-home.webp", sizes: "1920x1200", type: "image/webp", form_factor: "wide", label: "Версия для компьютера" },
         ],
         shortcuts: [
           { name: "Вариант от ИИ", short_name: "Вариант", url: "/app/#variant", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
@@ -65,7 +66,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ["**/*.{js,css,html,woff2,png,svg,webp}"],
         // в офлайн-кэш — только кириллица и латиница, остальные наборы шрифтов браузер не скачивает
-        globIgnores: ["**/*-{vietnamese,greek,greek-ext,math,symbols,latin-ext,cyrillic-ext}-wght-*.woff2"],
+        globIgnores: ["**/*-{vietnamese,greek,greek-ext,math,symbols,latin-ext,cyrillic-ext}-wght-*.woff2", "screens/**", "promo/**"],
         navigateFallback: null,
         cleanupOutdatedCaches: true,
         ignoreURLParametersMatching: [/.*/],

@@ -26,7 +26,8 @@ http.createServer(async (req, res) => {
     if (r.body) for await (const chunk of r.body) res.write(chunk);
     return res.end();
   }
-  let file = path.join(DIST, decodeURIComponent(url.pathname === "/app" ? "/app/" : url.pathname));
+  const p = url.pathname === "/app" ? "/app/" : /^\/en\/?$/.test(url.pathname) ? "/" : url.pathname; // как rewrites в vercel.json
+  let file = path.join(DIST, decodeURIComponent(p));
   if (!file.startsWith(DIST)) { res.writeHead(403); return res.end(); }
   if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, "index.html");
   if (!fs.existsSync(file)) { res.writeHead(404, { "content-type": "text/plain; charset=utf-8" }); return res.end("Не найдено"); }

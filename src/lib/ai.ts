@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { useApp, type Settings } from "./store";
+import { L, isEn } from "./i18n";
 
 const SYSTEM_PROMPT = `Ты — терпеливый репетитор, который готовит российского школьника к ЕГЭ и ОГЭ.
 Правила ответа:
@@ -9,6 +10,17 @@ const SYSTEM_PROMPT = `Ты — терпеливый репетитор, кот�
 — если вопрос расплывчатый, задай один уточняющий вопрос;
 — не выдумывай даты, формулы и номера заданий: если не уверен, так и скажи;
 — формулы записывай текстом, без LaTeX; не используй markdown-разметку со звёздочками.`;
+
+const SYSTEM_PROMPT_EN = `You are a patient tutor preparing a student for the Russian state exams EGE (Unified State Exam, grade 11) and OGE (Basic State Exam, grade 9).
+The student uses the app in English, so:
+— answer in clear, simple English, briefly and to the point, no filler;
+— explain step by step with examples, following the Russian school curriculum and the FIPI codifier;
+— keep Russian terms in brackets when they help with the real exam, e.g. legal capacity (дееспособность);
+— for the Russian language subject, quote Russian words and rules as they are and explain them in English;
+— in calculation tasks show the working, not just the answer;
+— if the question is vague, ask one clarifying question;
+— never invent dates, formulas or task numbers: if unsure, say so;
+— write formulas as plain text, no LaTeX; do not use markdown asterisks.`;
 
 /** Статус серверного ИИ (функция /api/chat на Vercel) */
 export const useServer = create<{ state: "unknown" | "ok" | "off"; model: string }>(() => ({ state: "unknown", model: "" }));
@@ -41,8 +53,8 @@ type Msg = { role: "system" | "user" | "assistant"; content: string };
 export async function askAI(messages: Msg[], onDelta: (piece: string) => void, signal?: AbortSignal, settingsOverride?: Settings) {
   const s = settingsOverride || useApp.getState().settings;
   if (!isAiReady(s, useServer.getState().state) && !(settingsOverride && settingsOverride.provider !== "server"))
-    throw new AIError("no-key", "ИИ не подключён");
-  const all: Msg[] = [{ role: "system", content: SYSTEM_PROMPT }, ...messages];
+    throw new AIError("no-key", L("ИИ не подключён", "AI is not connected"));
+  const all: Msg[] = [{ role: "system", content: isEn() ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT }, ...messages];
   let res: Response;
   try {
     res = s.provider === "server"
@@ -64,7 +76,7 @@ export async function askAI(messages: Msg[], onDelta: (piece: string) => void, s
     try { d = (await res.text()).slice(0, 400); const j = JSON.parse(d); d = j.error || d; } catch { /* текст как есть */ }
     throw new AIError("http-" + res.status, d);
   }
-  if (!res.body) throw new AIError("network", "Пустой ответ");
+  if (!res.body) throw new AIError("network", L("Пустой ответ", "Empty response"));
 
   const reader = res.body.getReader();
   const dec = new TextDecoder();
@@ -95,17 +107,19 @@ export function aiErrorText(e: unknown) {
     const server = useApp.getState().settings.provider === "server";
     switch (e.kind) {
       case "no-key": return server
-        ? "Сервер ИИ сейчас недоступен. Проверьте интернет или укажите свой ключ в настройках. Тренажёр и статистика работают и так."
-        : "ИИ не подключён. Откройте настройки и введите ключ API.";
-      case "network": return "Не удалось связаться с сервером ИИ. Проверьте интернет.";
-      case "http-401": return "Сервер отклонил ключ (401). Проверьте, что ключ скопирован целиком и активен.";
-      case "http-402": return "Закончился лимит бесплатных запросов (402). Попробуйте позже.";
-      case "http-404": return "Модель не найдена (404). Проверьте название модели.";
-      case "http-413": return "Запрос слишком длинный. Сократите текст или очистите переписку.";
-      case "http-429": return "Слишком много запросов подряд. Подождите минуту и повторите.";
-      case "http-503": return "На сервере не настроен ключ ИИ. Автору: добавьте OPENROUTER_API_KEY в настройках проекта на Vercel.";
+        ? L("Сервер ИИ сейчас недоступен. Проверьте интернет или укажите свой ключ в настройках. Тренажёр и статистика работают и так.",
+            "The AI server is unavailable right now. Check your connection or add your own key in Settings. The trainer and stats still work.")
+        : L("ИИ не подключён. Откройте настройки и введите ключ API.", "AI is not connected. Open Settings and enter an API key.");
+      case "network": return L("Не удалось связаться с сервером ИИ. Проверьте интернет.", "Couldn't reach the AI server. Check your internet connection.");
+      case "http-401": return L("Сервер отклонил ключ (401). Проверьте, что ключ скопирован целиком и активен.", "The server rejected the key (401). Make sure it was copied in full and is active.");
+      case "http-402": return L("Закончился лимит бесплатных запросов (402). Попробуйте позже.", "The free request limit is used up (402). Try again later.");
+      case "http-404": return L("Модель не найдена (404). Проверьте название модели.", "Model not found (404). Check the model name.");
+      case "http-413": return L("Запрос слишком длинный. Сократите текст или очистите переписку.", "The request is too long. Shorten the text or clear the chat.");
+      case "http-429": return L("Слишком много запросов подряд. Подождите минуту и повторите.", "Too many requests in a row. Wait a minute and try again.");
+      case "http-503": return L("На сервере не настроен ключ ИИ. Автору: добавьте OPENROUTER_API_KEY в настройках проекта на Vercel.",
+          "No AI key is configured on the server. Author: add OPENROUTER_API_KEY in the Vercel project settings.");
     }
-    if (e.kind.startsWith("http-")) return "Сервер вернул ошибку " + e.kind.slice(5) + ". " + (e.message || "");
+    if (e.kind.startsWith("http-")) return L("Сервер вернул ошибку ", "The server returned error ") + e.kind.slice(5) + ". " + (e.message || "");
   }
-  return "Что-то пошло не так: " + ((e as Error)?.message || e);
+  return L("Что-то пошло не так: ", "Something went wrong: ") + ((e as Error)?.message || e);
 }

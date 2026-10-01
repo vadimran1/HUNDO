@@ -1,0 +1,21 @@
+{
+  "name": "hundo-promo",
+  "version": "1.0.0",
+  "description": "Промо-ролик HUNDO на Remotion",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "python3 music.py && node render.mjs",
+    "stills": "node render.mjs stills"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.532",
+    "@remotion/cli": "^4.0.532",
+    "@remotion/renderer": "^4.0.532",
+    "hyperframes": "^0.8.104",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "^4.0.532"
+  },
+  "private": true,
+  "type": "module"
+}

@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type React from "react";
+import { locale } from "./i18n";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -34,7 +35,7 @@ export function daysLeft(iso: string) {
 
 export function formatDate(iso: string) {
   const d = new Date(iso + "T00:00:00");
-  return isNaN(+d) ? "—" : d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+  return isNaN(+d) ? "—" : d.toLocaleDateString(locale(), { day: "numeric", month: "long", year: "numeric" });
 }
 
 /** С сентября готовимся к экзамену следующего года */

@@ -1,4 +1,5 @@
 import type { SubjectId } from "./tasks";
+import { isEn } from "./i18n";
 
 export const APP_NAME = "HUNDO";          // название на логотипе — меняется здесь
 export const APP_VERSION = "3.0";
@@ -8,34 +9,39 @@ export const BUILD = __BUILD__;
 
 export type Exam = "ЕГЭ" | "ОГЭ";
 
-export const SUBJECTS: { id: SubjectId; name: string; short: string }[] = [
-  { id: "rus", name: "Русский язык", short: "Русский" },
-  { id: "math", name: "Математика", short: "Математика" },
-  { id: "hist", name: "История", short: "История" },
-  { id: "soc", name: "Обществознание", short: "Общество" },
-  { id: "bio", name: "Биология", short: "Биология" },
-  { id: "chem", name: "Химия", short: "Химия" },
-  { id: "phys", name: "Физика", short: "Физика" },
+const SUBJ_DATA: { id: SubjectId; ru: string; ruShort: string; en: string; enShort: string }[] = [
+  { id: "rus", ru: "Русский язык", ruShort: "Русский", en: "Russian language", enShort: "Russian" },
+  { id: "math", ru: "Математика", ruShort: "Математика", en: "Mathematics", enShort: "Maths" },
+  { id: "hist", ru: "История", ruShort: "История", en: "History", enShort: "History" },
+  { id: "soc", ru: "Обществознание", ruShort: "Общество", en: "Social studies", enShort: "Social" },
+  { id: "bio", ru: "Биология", ruShort: "Биология", en: "Biology", enShort: "Biology" },
+  { id: "chem", ru: "Химия", ruShort: "Химия", en: "Chemistry", enShort: "Chemistry" },
+  { id: "phys", ru: "Физика", ruShort: "Физика", en: "Physics", enShort: "Physics" },
 ];
-export const SUBJ_NAME: Record<string, string> = Object.fromEntries(SUBJECTS.map(s => [s.id, s.name]));
+/** Предметы на текущем языке (вызывать при отрисовке, а не один раз при загрузке) */
+export const subjects = () => SUBJ_DATA.map(s => ({ id: s.id, name: isEn() ? s.en : s.ru, short: isEn() ? s.enShort : s.ruShort }));
+export const subjName = (id: string) => { const s = SUBJ_DATA.find(x => x.id === id); return s ? (isEn() ? s.en : s.ru) : id; };
+/** Название предмета по-русски — для промптов ИИ, где предмет должен совпадать с кодификатором */
+export const subjNameRu = (id: string) => SUBJ_DATA.find(x => x.id === id)?.ru || id;
+export const SUBJECT_IDS = SUBJ_DATA.map(s => s.id);
 
 export const ACCENTS = [
-  { id: "mono", name: "Моно", color: "var(--fg)" },
-  { id: "blue", name: "Синий", color: "#3d5afe" },
-  { id: "red", name: "Красный", color: "#ff3b30" },
-  { id: "orange", name: "Оранжевый", color: "#ff7a1a" },
-  { id: "green", name: "Зелёный", color: "#1fc77e" },
-  { id: "violet", name: "Фиолетовый", color: "#8b5cf6" },
+  { id: "mono", name: "Моно", en: "Mono", color: "var(--fg)" },
+  { id: "blue", name: "Синий", en: "Blue", color: "#3d5afe" },
+  { id: "red", name: "Красный", en: "Red", color: "#ff3b30" },
+  { id: "orange", name: "Оранжевый", en: "Orange", color: "#ff7a1a" },
+  { id: "green", name: "Зелёный", en: "Green", color: "#1fc77e" },
+  { id: "violet", name: "Фиолетовый", en: "Violet", color: "#8b5cf6" },
 ] as const;
 export type AccentId = (typeof ACCENTS)[number]["id"];
 
 export type Provider = "server" | "odirouter" | "openrouter" | "openai" | "custom";
-export const PRESETS: Record<Provider, { label: string; base: string; model: string }> = {
-  server: { label: "Сервер HUNDO — без ключа", base: "/api", model: "" },
-  odirouter: { label: "OdiRouter — свой ключ", base: "https://api.odirouter.ai/v1", model: "free-gemini-2.5-flash" },
-  openrouter: { label: "OpenRouter — свой ключ", base: "https://openrouter.ai/api/v1", model: "openrouter/free" },
-  openai: { label: "OpenAI — свой ключ", base: "https://api.openai.com/v1", model: "gpt-4o-mini" },
-  custom: { label: "Свой адрес", base: "", model: "" },
+export const PRESETS: Record<Provider, { label: string; en: string; base: string; model: string }> = {
+  server: { label: "Сервер HUNDO — без ключа", en: "HUNDO server — no key needed", base: "/api", model: "" },
+  odirouter: { label: "OdiRouter — свой ключ", en: "OdiRouter — your own key", base: "https://api.odirouter.ai/v1", model: "free-gemini-2.5-flash" },
+  openrouter: { label: "OpenRouter — свой ключ", en: "OpenRouter — your own key", base: "https://openrouter.ai/api/v1", model: "openrouter/free" },
+  openai: { label: "OpenAI — свой ключ", en: "OpenAI — your own key", base: "https://api.openai.com/v1", model: "gpt-4o-mini" },
+  custom: { label: "Свой адрес", en: "Custom endpoint", base: "", model: "" },
 };
 
 export const sdamUrl = (subj: string, exam: Exam) => `https://${subj}-${exam === "ОГЭ" ? "oge" : "ege"}.sdamgia.ru/`;

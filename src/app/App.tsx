@@ -3,7 +3,8 @@ import { MotionConfig } from "motion/react";
 import { useApp, useUI, type Tab } from "@/lib/store";
 import { checkServer } from "@/lib/ai";
 import { applyLook } from "@/lib/fx";
-import { TopBar, TabBar, ScreenTransition, UpdateToast, TABS } from "./Shell";
+import { TopBar, TabBar, Sidebar, ScreenTransition, UpdateToast, TABS } from "./Shell";
+import { useLang } from "@/lib/i18n";
 import { SheetHost } from "./sheets/Sheets";
 import { Onboarding } from "./screens/Onboarding";
 import { HomeScreen } from "./screens/Home";
@@ -23,6 +24,10 @@ export function App() {
   const provider = useApp(s => s.settings.provider);
   const tab = useUI(s => s.tab);
   const Screen = SCREENS[tab];
+  const lang = useLang(s => s.lang);
+  useEffect(() => {
+    document.title = lang === "en" ? "HUNDO — AI tutor for Russian state exams" : "HUNDO — ИИ-репетитор для ЕГЭ и ОГЭ";
+  }, [lang]);
 
   useEffect(() => { applyLook(theme, accent); }, [theme, accent]);
   useEffect(() => {
@@ -49,9 +54,12 @@ export function App() {
       {!onboarded ? <Onboarding /> : (
         <>
           <TopBar />
-          <main className="mx-auto max-w-[560px] px-4 pb-[110px]">
-            <ScreenTransition id={tab}><Screen /></ScreenTransition>
-          </main>
+          <Sidebar />
+          <div className="lg:pl-[248px]">
+            <main className="mx-auto max-w-[560px] px-4 pb-[110px] lg:max-w-[920px] lg:px-12 lg:pt-6 lg:pb-16">
+              <ScreenTransition id={tab}><Screen /></ScreenTransition>
+            </main>
+          </div>
           <TabBar />
         </>
       )}

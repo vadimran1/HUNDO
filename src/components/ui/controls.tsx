@@ -1,6 +1,7 @@
 import * as React from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { L } from "@/lib/i18n";
 
 /** Чип-переключатель */
 export function Chip({ pressed, className, ...props }: React.ComponentProps<"button"> & { pressed?: boolean }) {
@@ -100,5 +101,5 @@ export function Verdict({ kind, title, children }: { kind: "ok" | "bad" | "part"
 }
 
 export function Typing() {
-  return <span className="typing" aria-label="ИИ печатает"><i /><i /><i /></span>;
+  return <span className="typing" aria-label={L("ИИ печатает", "AI is typing")}><i /><i /><i /></span>;
 }
