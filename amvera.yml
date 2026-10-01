@@ -1,0 +1,11 @@
+# Настройки для хостинга Amvera (amvera.ru): собрать по Dockerfile и запустить на порту 80.
+meta:
+  environment: docker
+  toolchain:
+    name: docker
+    version: latest
+build:
+  dockerfile: Dockerfile
+  skip: false
+run:
+  containerPort: 80
