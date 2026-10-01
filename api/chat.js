@@ -10,7 +10,9 @@
 //   AI_MAX_TOKENS        — предел длины ответа, по умолчанию 4000
 //   RATE_LIMIT_PER_MIN   — запросов в минуту с одного адреса, по умолчанию 20
 
-const KEY = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY || "";
+// Ключ очищаем от того, что часто захватывается при копировании: пробелы, переносы, кавычки, слово Bearer
+const KEY = String(process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY || "")
+  .trim().replace(/^["'`]+|["'`]+$/g, "").replace(/^Bearer\s+/i, "").trim();
 const MODEL = process.env.AI_MODEL || "openrouter/free";
 const BASE = (process.env.AI_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/+$/, "");
 const MAX_TOKENS = Number(process.env.AI_MAX_TOKENS || 4000);
@@ -47,8 +49,23 @@ function sameOrigin(req){
 
 export default {
   async fetch(req){
-    // GET — проверка: настроен ли ИИ на сервере
-    if(req.method === "GET") return json({ok:Boolean(KEY), model:KEY ? MODEL : ""});
+    // GET — проверка: настроен ли ИИ на сервере. /api/chat?check=1 — проверить ключ у OpenRouter
+    if(req.method === "GET"){
+      const info = {
+        ok:Boolean(KEY), model:KEY ? MODEL : "",
+        keyFormat:!KEY ? "none" : KEY.startsWith("sk-or-") ? "openrouter" : "unknown",
+        keyLength:KEY.length,
+      };
+      if(new URL(req.url).searchParams.get("check") && KEY){
+        try{
+          const r = await fetch(BASE + "/key", {headers:{authorization:"Bearer " + KEY}});
+          let detail = "";
+          try{ detail = (await r.text()).slice(0, 200); }catch{}
+          info.check = {status:r.status, ok:r.ok, detail:r.ok ? "ключ принят" : detail};
+        }catch(e){ info.check = {status:0, ok:false, detail:"OpenRouter не отвечает"}; }
+      }
+      return json(info);
+    }
     if(req.method !== "POST") return json({error:"Метод не поддерживается"}, 405);
     if(!KEY) return json({error:"На сервере не настроен ключ ИИ"}, 503);
     if(!sameOrigin(req)) return json({error:"Запрос не с сайта приложения"}, 403);
