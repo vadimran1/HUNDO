@@ -58,7 +58,7 @@ export function App() {
           <TopBar />
           <Sidebar />
           <div className="lg:pl-[248px]">
-            <main className="mx-auto max-w-[560px] px-4 pb-[110px] lg:max-w-[920px] lg:px-12 lg:pt-6 lg:pb-16">
+            <main className="mx-auto max-w-[560px] px-4 pb-[calc(var(--tabbar-h)+40px)] lg:max-w-[920px] lg:px-12 lg:pt-6 lg:pb-16">
               <ScreenTransition id={tab}><Screen /></ScreenTransition>
             </main>
           </div>

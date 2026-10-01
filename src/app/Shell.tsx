@@ -61,13 +61,13 @@ export function TabBar() {
   const go = useUI(s => s.go);
   const t = useT();
   return (
-    <nav aria-label={t("Разделы", "Sections")} className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/90 pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-md lg:hidden">
+    <nav aria-label={t("Разделы", "Sections")} className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/90 pb-[var(--tabbar-pb)] backdrop-blur-md lg:hidden">
       <div className="mx-auto grid max-w-[560px] grid-cols-5">
         {TABS.map(({ id, ru, en, Icon }) => {
           const on = id === tab;
           return (
             <button key={id} role="tab" aria-selected={on} onClick={() => go(id)}
-              className={cn("relative flex flex-col items-center gap-1 px-0.5 pt-2.5 pb-[11px] text-[11.5px] font-semibold transition-colors", on ? "text-fg" : "text-fg-3")}>
+              className={cn("relative flex h-[58px] flex-col items-center justify-center gap-1 px-0.5 text-[11.5px] font-semibold transition-colors", on ? "text-fg" : "text-fg-3")}>
               {on && <motion.span layoutId="tab-ind" className="absolute -top-px h-0.5 w-[26px] bg-accent" transition={{ type: "spring", stiffness: 520, damping: 34 }} />}
               <motion.span animate={{ y: on ? -1 : 0, scale: on ? 1.08 : 1 }} whileTap={{ scale: 0.85 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>
                 <Icon className="size-[21px]" strokeWidth={1.8} />
@@ -260,7 +260,7 @@ export function UpdateToast() {
         <motion.div role="status"
           initial={{ opacity: 0, y: 24, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 24 }}
           transition={{ type: "spring", stiffness: 420, damping: 30 }}
-          className="fixed inset-x-3 bottom-[calc(80px+env(safe-area-inset-bottom,0px))] z-70 mx-auto flex max-w-[536px] items-center gap-3 rounded-[14px] bg-fg py-3 pr-3 pl-4 text-bg shadow-[0_10px_30px_rgba(0,0,0,.25)] lg:right-6 lg:bottom-6 lg:left-auto lg:mx-0 lg:w-[400px]">
+          className="fixed inset-x-3 bottom-[calc(var(--tabbar-h)+10px)] z-70 mx-auto flex max-w-[536px] items-center gap-3 rounded-[14px] bg-fg py-3 pr-3 pl-4 text-bg shadow-[0_10px_30px_rgba(0,0,0,.25)] lg:right-6 lg:bottom-6 lg:left-auto lg:mx-0 lg:w-[400px]">
           <div className="min-w-0 flex-1">
             <b className="block text-sm">{t("Вышла новая версия", "A new version is out")}</b>
             <span className="block truncate text-[12.5px] opacity-70">{note || t("Нажмите, чтобы обновить приложение", "Tap to update the app")}</span>

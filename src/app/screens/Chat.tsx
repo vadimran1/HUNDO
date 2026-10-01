@@ -115,7 +115,7 @@ export function ChatScreen() {
           : <Bubble me={false} text={live.text} animate />)}
       </div>
 
-      <div ref={bottom} className="sticky bottom-[calc(74px+env(safe-area-inset-bottom,0px))] z-10 bg-[linear-gradient(transparent,var(--bg)_30%)] pt-3 pb-1.5 lg:bottom-0 lg:pb-6">
+      <div ref={bottom} className="sticky bottom-[var(--tabbar-h)] z-10 bg-[linear-gradient(transparent,var(--bg)_30%)] pt-3 pb-1.5 lg:bottom-0 lg:pb-6">
         <AnimatePresence>
           {(photo || preparing) && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}

@@ -19,6 +19,10 @@
   --wm-low: #5c5c5c;
   --accent: var(--fg); --on-accent: var(--bg);
   color-scheme: light;
+  /* отступ под нижними вкладками: на iPhone без кнопки «Домой» системная зона ~34 px,
+     половину её уже закрывают сами вкладки, поэтому берём меньше — как у родных приложений */
+  --tabbar-pb: max(6px, calc(env(safe-area-inset-bottom, 0px) - 18px));
+  --tabbar-h: calc(58px + var(--tabbar-pb));
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
