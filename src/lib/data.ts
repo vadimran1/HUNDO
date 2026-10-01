@@ -29,9 +29,10 @@ export const ACCENTS = [
 ] as const;
 export type AccentId = (typeof ACCENTS)[number]["id"];
 
-export type Provider = "server" | "openrouter" | "openai" | "custom";
+export type Provider = "server" | "odirouter" | "openrouter" | "openai" | "custom";
 export const PRESETS: Record<Provider, { label: string; base: string; model: string }> = {
   server: { label: "Сервер HUNDO — без ключа", base: "/api", model: "" },
+  odirouter: { label: "OdiRouter — свой ключ", base: "https://api.odirouter.ai/v1", model: "free-gemini-2.5-flash" },
   openrouter: { label: "OpenRouter — свой ключ", base: "https://openrouter.ai/api/v1", model: "openrouter/free" },
   openai: { label: "OpenAI — свой ключ", base: "https://api.openai.com/v1", model: "gpt-4o-mini" },
   custom: { label: "Свой адрес", base: "", model: "" },

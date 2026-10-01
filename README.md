@@ -17,14 +17,17 @@
 | Анимации | Motion (motion.dev): переходы экранов, шторки со смахиванием, общие layout-анимации |
 | Компоненты | Magic UI и shadcn/ui из каталога 21st.dev: Iphone, BlurFade, NumberTicker, BorderBeam, Marquee, AnimatedGridPattern, Button |
 | PWA | vite-plugin-pwa (Workbox): офлайн-режим и плашка «Вышла новая версия» |
-| ИИ | OpenRouter через серверную функцию Vercel, ответ приходит потоком |
+| ИИ | OdiRouter (или OpenRouter) через серверную функцию Vercel, ответ приходит потоком |
 | Хостинг | Vercel: каждый push в GitHub автоматически выкладывает новую версию |
 
 ## Запуск в интернете: GitHub + Vercel
 
 ### 1. Ключ для ИИ (бесплатно)
-1. Зарегистрируйтесь на [openrouter.ai](https://openrouter.ai).
-2. Откройте **Keys** → **Create Key** и скопируйте ключ (начинается с `sk-or-v1-`).
+Подходит ключ [OdiRouter](https://odirouter.ai) или [OpenRouter](https://openrouter.ai). Сервер сам понимает по ключу, чей он:
+- ключ OpenRouter (начинается с `sk-or-v1-`) → модель `openrouter/free`;
+- любой другой ключ → OdiRouter, бесплатная модель `free-gemini-2.5-flash`.
+
+У OdiRouter без пополнения баланса: до 50 запросов к бесплатным моделям в день и 5 в минуту. После пополнения — 100 в день и 100 в минуту.
 
 ### 2. Репозиторий на GitHub
 1. На [github.com](https://github.com) нажмите **New repository**, например `hundo`. Можно сделать приватным.
@@ -48,10 +51,10 @@
 
 | Переменная | По умолчанию | Зачем |
 |---|---|---|
-| `AI_MODEL` | `openrouter/free` | модель; `openrouter/free` сам выбирает доступную бесплатную |
+| `AI_MODEL` | по ключу | другая модель, например `free-gpt-5.4-mini` (OdiRouter) |
 | `AI_MAX_TOKENS` | `4000` | предел длины ответа |
 | `RATE_LIMIT_PER_MIN` | `20` | сколько запросов в минуту можно с одного адреса |
-| `AI_BASE_URL` | `https://openrouter.ai/api/v1` | другой OpenAI-совместимый сервис |
+| `AI_BASE_URL` | по ключу | другой OpenAI-совместимый сервис |
 
 Если переменную добавили после деплоя: **Deployments → ⋯ → Redeploy**.
 

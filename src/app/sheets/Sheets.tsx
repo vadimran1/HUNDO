@@ -117,7 +117,7 @@ function SettingsSheet() {
           <label className="mt-4 block"><Label>Адрес API</Label><input className="field" value={ai.base} spellCheck={false} onChange={e => setAi({ ...ai, base: e.target.value.trim() })} placeholder="https://openrouter.ai/api/v1" /></label>
           <label className="mt-4 block"><Label>Модель</Label><input className="field" value={ai.model} spellCheck={false} onChange={e => setAi({ ...ai, model: e.target.value.trim() })} placeholder="openrouter/free" /></label>
           <label className="mt-4 block"><Label>Ключ API</Label><input className="field" type="password" autoComplete="off" value={ai.key} spellCheck={false} onChange={e => setAi({ ...ai, key: e.target.value.trim() })} placeholder="sk-or-v1-…" /></label>
-          <p className="mt-2 text-[12.5px] text-fg-3">Ключ хранится только на этом устройстве. Бесплатный ключ: openrouter.ai → Keys → Create Key.</p>
+          <p className="mt-2 text-[12.5px] text-fg-3">Ключ хранится только на этом устройстве. Бесплатный ключ: odirouter.ai или openrouter.ai.</p>
         </motion.div>
       )}
       <Button variant="outline" className="mt-3 w-full" onClick={runTest} disabled={test?.kind === "busy"}>Проверить подключение</Button>
@@ -165,7 +165,7 @@ function AboutSheet() {
     ["Дизайн", "монохромный минимализм по рекомендациям UI/UX Pro Max, акцентный цвет на выбор"],
     ["Формат", "PWA — ставится на iPhone и Android с главного экрана, работает без магазина приложений"],
     ["Офлайн", "service worker (Workbox) кэширует приложение; без сети работают тренажёр и статистика"],
-    ["ИИ", "серверная функция на Vercel передаёт запросы в OpenRouter, ключ хранится на сервере; ответ приходит потоком"],
+    ["ИИ", "серверная функция на Vercel передаёт запросы в OdiRouter (бесплатная модель Gemini 2.5 Flash), ключ хранится на сервере; ответ приходит потоком"],
     ["Обновления", "каждое изменение в GitHub автоматически выкладывается на Vercel, приложение само предлагает обновиться"],
     ["Данные", "хранятся только на устройстве (localStorage)"],
   ];

@@ -1,20 +1,25 @@
 // Серверная функция Vercel: /api/chat
 // Приложение отправляет сюда сообщения, функция добавляет секретный ключ
-// и передаёт запрос в OpenRouter (или любой OpenAI-совместимый сервис).
-// Ответ приходит потоком, по мере генерации. Ключ никогда не попадает в браузер.
+// и передаёт запрос в OpenAI-совместимый сервис ИИ. Ответ приходит потоком.
+// Ключ никогда не попадает в браузер.
+//
+// Сервис определяется по ключу автоматически:
+//   ключ OpenRouter (sk-or-…)  → openrouter.ai,       модель openrouter/free
+//   любой другой ключ          → OdiRouter (odirouter.ai), модель free-gemini-2.5-flash
 //
 // Переменные окружения (Vercel → Project → Settings → Environment Variables):
-//   OPENROUTER_API_KEY   — ключ, обязательно
-//   AI_MODEL             — модель, по умолчанию openrouter/free
-//   AI_BASE_URL          — адрес API, по умолчанию https://openrouter.ai/api/v1
+//   OPENROUTER_API_KEY   — ключ (можно и AI_API_KEY / ODIROUTER_API_KEY), обязательно
+//   AI_MODEL             — другая модель, например free-gpt-5.4-mini
+//   AI_BASE_URL          — другой адрес API
 //   AI_MAX_TOKENS        — предел длины ответа, по умолчанию 4000
 //   RATE_LIMIT_PER_MIN   — запросов в минуту с одного адреса, по умолчанию 20
 
-// Ключ очищаем от того, что часто захватывается при копировании: пробелы, переносы, кавычки, слово Bearer
-const KEY = String(process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY || "")
+const KEY = String(process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY || process.env.ODIROUTER_API_KEY || "")
   .trim().replace(/^["'`]+|["'`]+$/g, "").replace(/^Bearer\s+/i, "").trim();
-const MODEL = process.env.AI_MODEL || "openrouter/free";
-const BASE = (process.env.AI_BASE_URL || "https://openrouter.ai/api/v1").replace(/\/+$/, "");
+const IS_OPENROUTER = KEY.startsWith("sk-or-");
+const PROVIDER = process.env.AI_BASE_URL ? "custom" : IS_OPENROUTER ? "openrouter" : "odirouter";
+const MODEL = process.env.AI_MODEL || (IS_OPENROUTER ? "openrouter/free" : "free-gemini-2.5-flash");
+const BASE = (process.env.AI_BASE_URL || (IS_OPENROUTER ? "https://openrouter.ai/api/v1" : "https://api.odirouter.ai/v1")).replace(/\/+$/, "");
 const MAX_TOKENS = Number(process.env.AI_MAX_TOKENS || 4000);
 const RATE = Number(process.env.RATE_LIMIT_PER_MIN || 20);
 const MAX_CHARS = 60000;       // суммарная длина сообщений в одном запросе
@@ -52,17 +57,17 @@ export default {
     // GET — проверка: настроен ли ИИ на сервере. /api/chat?check=1 — проверить ключ у OpenRouter
     if(req.method === "GET"){
       const info = {
-        ok:Boolean(KEY), model:KEY ? MODEL : "",
-        keyFormat:!KEY ? "none" : KEY.startsWith("sk-or-") ? "openrouter" : "unknown",
+        ok:Boolean(KEY), model:KEY ? MODEL : "", provider:KEY ? PROVIDER : "",
         keyLength:KEY.length,
       };
       if(new URL(req.url).searchParams.get("check") && KEY){
         try{
-          const r = await fetch(BASE + "/key", {headers:{authorization:"Bearer " + KEY}});
+          // проверка ключа без траты лимита: OpenRouter — /key, остальные — список моделей
+          const r = await fetch(BASE + (IS_OPENROUTER && PROVIDER === "openrouter" ? "/key" : "/models"), {headers:{authorization:"Bearer " + KEY}});
           let detail = "";
           try{ detail = (await r.text()).slice(0, 200); }catch{}
           info.check = {status:r.status, ok:r.ok, detail:r.ok ? "ключ принят" : detail};
-        }catch(e){ info.check = {status:0, ok:false, detail:"OpenRouter не отвечает"}; }
+        }catch(e){ info.check = {status:0, ok:false, detail:"Сервис ИИ не отвечает"}; }
       }
       return json(info);
     }
