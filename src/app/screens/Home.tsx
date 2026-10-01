@@ -116,15 +116,17 @@ function DeskDashboard() {
   const { variant, stats, subjects } = state;
   const go = useUI(s => s.go);
   const t = useT();
-  const weak = weakTopics(state).slice(0, 4);
+  const allWeak = weakTopics(state);
+  const weak = allWeak.slice(0, 4);
   let got = 0, max = 0;
   variant?.tasks.forEach(x => { max += x.max; got += variant.results[x.n]?.score || 0; });
-  const card = "rounded-[16px] border border-line p-5 text-left";
+  // min-w-0: иначе длинная тема распирает колонку сетки и вылезает за карточку
+  const card = "min-w-0 overflow-hidden rounded-[16px] border border-line p-5 text-left";
   const head = "mb-4 font-mono text-[11.5px] tracking-[.12em] text-fg-3 uppercase";
 
   return (
     <div className="col-span-2 mt-12 hidden grid-cols-3 gap-4 lg:grid">
-      <motion.button whileHover={{ y: -2 }} onClick={() => go("variant")} className={card + " transition-colors hover:border-fg"}>
+      <motion.button whileHover={{ y: -2 }} onClick={() => go("variant")} className={card + " flex flex-col items-stretch justify-start transition-colors hover:border-fg"}>
         <p className={head}>{t("Последний вариант", "Last mock exam")}</p>
         {variant ? (
           <>
@@ -144,15 +146,20 @@ function DeskDashboard() {
       <div className={card}>
         <p className={head}>{t("На повторение", "To review")}</p>
         {weak.length ? (
-          <ul className="grid gap-2.5">
+          <ul className="grid gap-3">
             {weak.map(w => (
-              <li key={w.subj + w.topic} className="flex items-baseline justify-between gap-3 text-[14px]">
-                <span className="truncate font-medium">{w.topic}</span>
-                <span className="flex-none font-mono text-[11px] text-fg-3">{subjName(w.subj)}</span>
+              <li key={w.subj + w.topic} className="min-w-0 text-[14px] leading-tight">
+                <span className="block truncate font-medium" title={w.topic}>{w.topic}</span>
+                <span className="block truncate text-[12px] text-fg-3">{subjName(w.subj)}</span>
               </li>
             ))}
           </ul>
         ) : <p className="text-[14px] text-fg-2">{t("Ошибок пока нет.", "No mistakes yet.")}</p>}
+        {allWeak.length > weak.length && (
+          <button onClick={() => go("stats")} className="group mt-3.5 inline-flex items-center gap-1.5 text-[13px] font-semibold text-fg-2 hover:text-fg">
+            {t(`ещё ${allWeak.length - weak.length}`, `${allWeak.length - weak.length} more`)} <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </button>
+        )}
       </div>
 
       <div className={card}>
