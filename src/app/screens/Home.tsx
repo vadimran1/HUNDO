@@ -16,6 +16,7 @@ export function HomeScreen() {
   const stats = useApp(s => s.stats);
   const streak = useApp(s => s.streak);
   const subjects = useApp(s => s.subjects);
+  const diag = useApp(s => s.diag);
   const state = useApp();
   const { go, openSheet } = useUI();
   const ready = useAiReady();
@@ -76,11 +77,24 @@ export function HomeScreen() {
 
       <div className="lg:pt-7">
         <div className="mt-7 grid gap-2 lg:mt-0 lg:gap-3">
+          {!diag && (
+            <motion.button initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} whileTap={{ scale: 0.985 }} whileHover={{ y: -2 }}
+              onClick={() => useUI.setState({ overlay: "diag" })}
+              className="flex w-full items-center gap-3.5 rounded-[14px] border-[1.5px] border-dashed border-fg px-4 py-4 text-left lg:px-6 lg:py-5">
+              <span className="min-w-0 flex-1">
+                <b className="block text-[15.5px] lg:text-[18px]">{t("Узнайте свой уровень", "Find out your level")}</b>
+                <span className="text-[12.5px] text-fg-3 lg:text-[14px]">{t("короткая диагностика — и варианты подстроятся под вас", "a short diagnostic, then mock exams adapt to you")}</span>
+              </span>
+              <ArrowRight className="size-[18px]" />
+            </motion.button>
+          )}
           <motion.button whileTap={{ scale: 0.985 }} whileHover={{ y: -2 }} onClick={() => go("variant")}
             className="relative flex w-full items-center gap-3.5 overflow-hidden rounded-[14px] bg-accent px-4 py-[18px] text-left text-on-accent lg:px-6 lg:py-7">
             <span className="min-w-0 flex-1">
               <b className="block text-[16px] lg:text-[20px]">{t("Вариант от ИИ", "AI mock exam")}</b>
-              <span className="text-[12.5px] opacity-75 lg:text-[14px]">{t("нейросеть составит, проверит и разберёт", "the AI writes it, marks it and explains mistakes")}</span>
+              <span className="text-[12.5px] opacity-75 lg:text-[14px]">{diag
+                ? t("под ваш уровень и слабые темы", "tailored to your level and weak topics")
+                : t("нейросеть составит, проверит и разберёт", "the AI writes it, marks it and explains mistakes")}</span>
             </span>
             <ArrowRight className="size-[18px]" />
             <BorderBeam size={70} duration={7} colorFrom="var(--on-accent)" colorTo="transparent" borderWidth={1.5} />
@@ -102,6 +116,7 @@ export function HomeScreen() {
         </div>
 
         {weak > 0 && <LinkRow onClick={() => go("stats")}>{weak} {pl(weak, ["тема", "темы", "тем"], ["topic", "topics"])} {t("на повторение", "to review")}</LinkRow>}
+        {diag && <LinkRow onClick={() => useUI.setState({ overlay: "diag" })}>{t(`Диагностика от ${formatDate(diag.date)} — пройти заново`, `Diagnostic from ${formatDate(diag.date)} — retake`)}</LinkRow>}
         {!ready && <LinkRow onClick={() => openSheet("settings")}>{t("ИИ не подключён — открыть настройки", "AI is not connected — open Settings")}</LinkRow>}
       </div>
 

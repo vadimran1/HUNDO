@@ -6,6 +6,7 @@ import { Flashcards } from "./Flashcards";
 import { TASKS, localTask, type Task } from "@/lib/tasks";
 import { subjName, subjNameRu, fipiBankUrl, sdamUrl } from "@/lib/data";
 import { useT } from "@/lib/i18n";
+import { weakTopicsRu } from "@/lib/diag";
 import { askAI, aiErrorText, useAiReady } from "@/lib/ai";
 import { burst, shake } from "@/lib/fx";
 import { cellStyle, isCorrect, prettyMath } from "@/lib/utils";
@@ -18,6 +19,10 @@ function pick(subjects: string[], answered: Record<string, boolean>, skip?: stri
   if (!pool.length) pool = TASKS;
   const fresh = pool.filter(t => !(t.id in answered) && t.id !== skip);
   const wrong = pool.filter(t => answered[t.id] === false && t.id !== skip);
+  // темы, где ошибся на диагностике, идут первыми: 2 раза из 3 берём новое задание по слабой теме
+  const weak = new Set(weakTopicsRu(useApp.getState().diag));
+  const freshWeak = fresh.filter(t => weak.has(t.topic));
+  if (freshWeak.length && Math.random() < 0.67) return freshWeak[Math.floor(Math.random() * freshWeak.length)];
   const bag = fresh.length ? fresh : wrong.length ? wrong : pool.filter(t => t.id !== skip);
   return (bag.length ? bag : pool)[Math.floor(Math.random() * (bag.length || pool.length))];
 }

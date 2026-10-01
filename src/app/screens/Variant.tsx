@@ -7,7 +7,8 @@ import { useT, L, isEn, pl, examLabel } from "@/lib/i18n";
 import { askAI, aiErrorText, AIError, useAiReady } from "@/lib/ai";
 import { burst, shake } from "@/lib/fx";
 import { cellStyle, cn, examYear, isCorrect, prettyMath } from "@/lib/utils";
-import type { SubjectId } from "@/lib/tasks";
+import { TASKS, type SubjectId } from "@/lib/tasks";
+import { levelName, personalBrief, weakestSubject } from "@/lib/diag";
 import { Button } from "@/components/ui/button";
 import { Chip, Label, Segmented, Switch, Verdict } from "@/components/ui/controls";
 import { NumberTicker } from "@/components/magicui/number-ticker";
@@ -59,9 +60,22 @@ export function VariantScreen() {
 }
 
 function Setup() {
-  const { subjects, exam, patch } = useApp();
+  const { subjects, exam, patch, diag, weakAI, answered } = useApp();
   const ready = useAiReady();
-  const [subj, setSubj] = useState<SubjectId>(subjects[0] || "hist");
+  // с итогов диагностики приходит предмет, с которого стоит начать; иначе — самый слабый
+  const [subj, setSubj] = useState<SubjectId>(() => {
+    const want = useUI.getState().variantSubj || weakestSubject(diag);
+    useUI.setState({ variantSubj: null });
+    return want && subjects.includes(want) ? want : subjects[0] || "hist";
+  });
+  // слабые темы предмета: ошибки диагностики + ошибки в тренажёре и прошлых вариантах
+  const extraWeak = [
+    ...weakAI.filter(w => w.subj === subj).map(w => w.topic),
+    ...Object.keys(answered).filter(id => answered[id] === false).map(id => TASKS.find(x => x.id === id)).filter(x => x?.subj === subj).map(x => x!.topic),
+  ];
+  const canPersonal = !!diag?.subjects[subj] || extraWeak.length > 0;
+  const [personal, setPersonal] = useState(true);
+  const usePersonal = personal && canPersonal;
   const [count, setCount] = useState<"5" | "10" | "15">("10");
   const [open, setOpen] = useState(true);
   const [examMode, setExamMode] = useState(false);
@@ -76,7 +90,7 @@ function Setup() {
     setBusy(true); setErr(""); setLog([t("подключаюсь к нейросети", "connecting to the AI")]);
     let acc = "", lastN = 0;
     try {
-      const text = await askAI([{ role: "user", content: variantPrompt(exam, subj, +count, open) }], d => {
+      const text = await askAI([{ role: "user", content: variantPrompt(exam, subj, +count, open) + (usePersonal ? personalBrief(diag, subj, extraWeak) : "") }], d => {
         if (!acc) setLog(l => [...l, t("нейросеть пишет задания", "the AI is writing tasks")]);
         acc += d;
         const n = (acc.match(/"q"\s*:/g) || []).length;
@@ -128,7 +142,21 @@ function Setup() {
         <div className="mt-5 lg:max-w-[360px]"><Label>{t("Сколько заданий", "Number of tasks")}</Label>
           <Segmented id="vcount" value={count} onChange={v => setCount(v)} items={[["5", "5"], ["10", "10"], ["15", "15"]]} />
         </div>
-        <div className="mt-5"><Switch checked={open} onChange={setOpen}>{t("Задание с развёрнутым ответом — ИИ оценит его по критериям", "Extended-answer task — the AI marks it against the criteria")}</Switch></div>
+        <div className="mt-5">
+          {canPersonal ? (
+            <Switch checked={personal} onChange={setPersonal}>
+              {diag?.subjects[subj]
+                ? t(`Под мой уровень: ${levelName(diag.subjects[subj]!.level)}, больше заданий по слабым темам`, `Fit to my level: ${levelName(diag.subjects[subj]!.level)}, more tasks on weak topics`)
+                : t("Под меня: больше заданий по темам, где я ошибался", "Made for me: more tasks on topics I got wrong")}
+            </Switch>
+          ) : (
+            <button onClick={() => useUI.setState({ overlay: "diag" })} className="group flex w-full items-center gap-2 rounded-xl border border-dashed border-line-2 px-3.5 py-3 text-left text-[13.5px] text-fg-2 hover:border-fg hover:text-fg">
+              <span className="flex-1">{t("Пройдите диагностику — и вариант подстроится под ваш уровень", "Take the diagnostic and the paper will fit your level")}</span>
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
+          )}
+        </div>
+        <div className="mt-4"><Switch checked={open} onChange={setOpen}>{t("Задание с развёрнутым ответом — ИИ оценит его по критериям", "Extended-answer task — the AI marks it against the criteria")}</Switch></div>
         <div className="mt-4"><Switch checked={examMode} onChange={setExamMode}>
           {t(`Режим экзамена: таймер на ${minutes} мин, по окончании времени вариант сдаётся сам`, `Exam mode: a ${minutes}-minute timer, the paper is handed in when time runs out`)}
         </Switch></div>

@@ -1,11 +1,13 @@
 import { useEffect } from "react";
-import { MotionConfig } from "motion/react";
+import { AnimatePresence, MotionConfig } from "motion/react";
+import { Diagnostic } from "./screens/Diagnostic";
 import { useApp, useUI, type Tab } from "@/lib/store";
 import { checkServer } from "@/lib/ai";
 import { applyLook } from "@/lib/fx";
 import { TopBar, TabBar, Sidebar, ScreenTransition, UpdateToast, TABS } from "./Shell";
 import { useLang } from "@/lib/i18n";
 import { pingSeen } from "@/lib/push";
+import { startSync } from "@/lib/account";
 import { SheetHost } from "./sheets/Sheets";
 import { Onboarding } from "./screens/Onboarding";
 import { HomeScreen } from "./screens/Home";
@@ -24,6 +26,7 @@ export function App() {
   const accent = useApp(s => s.accent);
   const provider = useApp(s => s.settings.provider);
   const tab = useUI(s => s.tab);
+  const overlay = useUI(s => s.overlay);
   const Screen = SCREENS[tab];
   const lang = useLang(s => s.lang);
   useEffect(() => {
@@ -49,6 +52,7 @@ export function App() {
     if (useApp.getState().onboarded && TABS.some(t => t.id === h)) useUI.setState({ tab: h });
     if (useApp.getState().onboarded) useApp.getState().touchStreak();
     if (useApp.getState().remind) pingSeen();
+    startSync();
   }, []);
 
   return (
@@ -65,6 +69,7 @@ export function App() {
           <TabBar />
         </>
       )}
+      <AnimatePresence>{onboarded && overlay === "diag" && <Diagnostic />}</AnimatePresence>
       <SheetHost />
       <UpdateToast />
     </MotionConfig>

@@ -15,10 +15,12 @@ import { disableRemind, enableRemind, type PushFail } from "@/lib/push";
 import { Wordmark } from "@/components/Wordmark";
 import { Sheet } from "../Shell";
 import { weakTopics } from "../screens/Stats";
+import { diagSummaryForPlan } from "@/lib/diag";
+import { AccountRow, AccountSheet } from "./Account";
 
 const TITLES = {
   settings: ["Настройки", "Settings"], about: ["О проекте", "About"], paste: ["Разобрать задание", "Explain a task"],
-  plan: ["План подготовки", "Study plan"], sources: ["Источники заданий", "Task sources"],
+  plan: ["План подготовки", "Study plan"], sources: ["Источники заданий", "Task sources"], account: ["Аккаунт", "Account"],
 } as const;
 
 export function SheetHost() {
@@ -32,6 +34,7 @@ export function SheetHost() {
       {sheet === "paste" && <PasteSheet />}
       {sheet === "plan" && <PlanSheet />}
       {sheet === "sources" && <SourcesSheet />}
+      {sheet === "account" && <AccountSheet />}
     </Sheet>
   );
 }
@@ -83,6 +86,9 @@ function SettingsSheet() {
 
   return (
     <div className="pb-2">
+      <Section>{t("Аккаунт", "Account")}</Section>
+      <AccountRow onOpen={() => useUI.setState({ sheet: "account" })} />
+
       <Section>{t("Язык", "Language")}</Section>
       <Segmented id="lang" value={lang} items={[["ru", "Русский"], ["en", "English"]] as [Lang, string][]} onChange={v => setLang(v)} />
 
@@ -322,17 +328,18 @@ function PlanSheet() {
   const gen = async () => {
     setPlan({ text: "", busy: true });
     const weak = weakTopics(state).map(w => `${subjName(w.subj)}: ${w.topic}`).join("; ") || t("пока не определены", "not identified yet");
+    const diagLine = diagSummaryForPlan(state.diag);
     try {
       await askAI([{ role: "user", content: isEn() ? `Make a study plan for the ${examLabel(state.exam)} (Russian state exam).
 Subjects: ${state.subjects.map(s => subjName(s)).join(", ")}.
 ${d} days until the exam.
 Weak topics from the trainer: ${weak}.
-
+${diagLine ? `Diagnostic test results: ${diagLine}. Spend more time on subjects with a lower level and start with the weak topics.\n` : ""}
 Give a week-by-week plan: what to study, how many tasks to solve, when to sit mock exams. 250 words max, a plain list, no introduction, in English.` : `Составь план подготовки к ${state.exam}.
 Предметы: ${state.subjects.map(s => subjName(s)).join(", ")}.
 До экзамена ${d} дней.
 Слабые темы по результатам тренажёра: ${weak}.
-
+${diagLine ? `Результаты диагностики: ${diagLine}. Больше времени отдай предметам с низким уровнем, начинай со слабых тем.\n` : ""}
 Дай план по неделям: что изучать, сколько заданий решать, когда писать пробники. Максимум 250 слов, простым списком, без вступления.` }],
         piece => setPlan(p => ({ text: (p?.text || "") + piece, busy: true })));
       setPlan(p => ({ text: p?.text || "", busy: false }));

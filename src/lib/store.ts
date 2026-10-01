@@ -14,6 +14,10 @@ export type Variant = {
   /** режим экзамена: отведённые минуты и момент старта; finished — когда сдан */
   timer?: { minutes: number; startedAt: number; finishedAt?: number };
 };
+/** Итог диагностики по предмету: сколько верно, уровень, задания с ошибкой и без (по id — темы берём на нужном языке) */
+export type DiagLevel = "low" | "mid" | "high";
+export type DiagSubject = { correct: number; total: number; level: DiagLevel; wrong: string[]; right: string[] };
+export type Diag = { date: string; exam: Exam; subjects: Partial<Record<SubjectId, DiagSubject>> };
 /** Карточка в интервальном повторении: коробка 1–5 и дата следующего показа */
 export type CardState = { box: number; due: string };
 
@@ -33,6 +37,7 @@ type Data = {
   variant: Variant | null;
   cards: Record<string, CardState>;
   remind: boolean;
+  diag: Diag | null;
 };
 
 type Actions = {
@@ -61,6 +66,7 @@ const initial: Data = {
   variant: null,
   cards: {},
   remind: false,
+  diag: null,
 };
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -102,13 +108,17 @@ export const useApp = create<Data & Actions>()(
 export type Tab = "home" | "train" | "variant" | "chat" | "stats";
 /** Запрос в чат с другого экрана: text уходит ИИ, display показывается в пузыре (если отличается) */
 export type Pending = { text: string; image?: string; thumb?: string; display?: string };
-export type SheetId = "settings" | "about" | "paste" | "plan" | "sources" | null;
+export type SheetId = "settings" | "about" | "paste" | "plan" | "sources" | "account" | null;
 
 export const useUI = create<{
   tab: Tab; dir: number; sheet: SheetId; pendingChat: Pending | null; onbStep: number; trainMode: "tasks" | "cards";
+  /** экран поверх вкладок: диагностика уровня */
+  overlay: "diag" | null;
+  /** предмет, который Варианты выберут по умолчанию (после диагностики — самый слабый) */
+  variantSubj: SubjectId | null;
   go: (t: Tab) => void; openSheet: (s: SheetId) => void; askInChat: (text: string, image?: string, thumb?: string, display?: string) => void;
 }>()((set, get) => ({
-  tab: "home", dir: 1, sheet: null, pendingChat: null, onbStep: 0, trainMode: "tasks",
+  tab: "home", dir: 1, sheet: null, pendingChat: null, onbStep: 0, trainMode: "tasks", overlay: null, variantSubj: null,
   go: t => {
     const order: Tab[] = ["home", "train", "variant", "chat", "stats"];
     const dir = order.indexOf(t) >= order.indexOf(get().tab) ? 1 : -1;

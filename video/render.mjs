@@ -39,7 +39,7 @@ for (const lang of langs) {
   } else {
     await renderMedia({
       composition, serveUrl, codec: "h264", crf: 20, pixelFormat: "yuv420p", browserExecutable,
-      outputLocation: path.join(out, `${name(lang)}.mp4`), concurrency: 2,
+      outputLocation: path.join(out, `${name(lang)}.mp4`), concurrency: 2, ...(kind === "hype" ? { crf: 25, x264Preset: "slow" } : {}),
       onProgress: ({ progress }) => { if (Math.round(progress * 100) % 20 === 0) process.stdout.write(`${lang} ${Math.round(progress * 100)}%  `); },
     });
     // звук: hype.wav из hype_music.py или music.wav из music.py, громкость выравнивается до −14 LUFS

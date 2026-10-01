@@ -31,7 +31,7 @@ const T = {
     a: "16 мая 1703 года заложили Петропавловскую крепость — это дата основания Петербурга. 1700 — начало Северной войны.",
     e4: "04 · на компьютере", h4: "И на компьютере", keys: ["1–5", "Enter", "RU / EN"], langs: ["РУССКИЙ", "ENGLISH"],
     montage: ["ВАРИАНТЫ", "РАЗБОРЫ", "ПЛАН", "ПРОГРЕСС", "ТРЕНАЖЁР", "ЧАТ С ИИ", "ОФЛАЙН", "БЕЗ APP STORE"],
-    free: "Бесплатно. Скачай на телефон.", url: "hundo-tau.vercel.app", beat: "150 BPM",
+    free: "Бесплатно. Скачай на телефон.", url: "hundo.online", beat: "150 BPM",
   },
   en: {
     intro: ["EGE", "OGE", "100", "POINTS?"],
@@ -45,7 +45,7 @@ const T = {
     a: "The Peter and Paul Fortress was laid on 16 May 1703 — St Petersburg's founding date. 1700 is when the Great Northern War began.",
     e4: "04 · on desktop", h4: "On desktop too", keys: ["1–5", "Enter", "RU / EN"], langs: ["РУССКИЙ", "ENGLISH"],
     montage: ["MOCK EXAMS", "EXPLAINED", "STUDY PLAN", "PROGRESS", "PRACTICE", "AI CHAT", "OFFLINE", "NO APP STORE"],
-    free: "Free. Get it on your phone.", url: "hundo-tau.vercel.app/en", beat: "150 BPM",
+    free: "Free. Get it on your phone.", url: "hundo.online/en", beat: "150 BPM",
   },
 };
 
@@ -266,7 +266,7 @@ function Desk({ lang }: { lang: Lang }) {
           transform: `rotateX(${(1 - s) * 35}deg) translateY(${(1 - s) * 300}px) scale(${0.88 + s * 0.12 + (second ? 0.03 * hit(f, 1.5) : 0)})`, transformOrigin: "50% 100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 18px", background: C.bg2, borderBottom: `1px solid ${C.line}` }}>
             {[0, 1, 2].map(i => <i key={i} style={{ width: 13, height: 13, borderRadius: 9, background: C.line2 }} />)}
-            <span style={{ margin: "0 auto", fontFamily: MONO, fontSize: 18, color: C.fg3, background: C.bg, padding: "5px 90px", borderRadius: 8 }}>hundo-tau.vercel.app/app</span>
+            <span style={{ margin: "0 auto", fontFamily: MONO, fontSize: 18, color: C.fg3, background: C.bg, padding: "5px 90px", borderRadius: 8 }}>hundo.online/app</span>
           </div>
           <Img src={staticFile(`screens/${lang}/desktop-${second && roll % 2 ? "variant" : "home"}.webp`)} style={{ display: "block", width: "100%", height: 470, objectFit: "cover", objectPosition: "top" }} />
         </div>

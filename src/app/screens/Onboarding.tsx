@@ -59,6 +59,9 @@ function Title({ onStart }: { onStart: () => void }) {
       </div>
       <BlurFade delay={0.4} className="pb-6">
         <Button className="w-full lg:w-auto lg:min-w-[260px]" size="lg" onClick={onStart}>{t("Начать", "Get started")} <ArrowRight /></Button>
+        <button onClick={() => useUI.setState({ sheet: "account" })} className="mt-3 block w-full text-center text-[13.5px] font-medium text-fg-2 hover:text-fg lg:w-auto lg:text-left">
+          {t("Уже занимались? Войти через Telegram или MAX", "Studied before? Sign in with Telegram or MAX")}
+        </button>
       </BlurFade>
     </section>
   );
@@ -170,7 +173,8 @@ function DateStep({ onBack }: { onBack: () => void }) {
       <p className="mt-2 text-[12.5px] text-fg-3">{t("Точное расписание публикуют зимой. Дату всегда можно поменять в настройках.", "The official timetable comes out in winter. You can change the date in Settings any time.")}</p>
       <Nav onBack={onBack} next={t("Начать подготовку", "Start preparing")} onNext={() => {
         patch({ examDate: d || examDate, onboarded: true }); touch();
-        useUI.setState({ tab: "home", dir: 1, onbStep: 0 }); window.scrollTo(0, 0);
+        // сразу после настройки предлагаем короткую диагностику (её можно пропустить)
+        useUI.setState({ tab: "home", dir: 1, onbStep: 0, overlay: "diag" }); window.scrollTo(0, 0);
       }} />
     </>
   );

@@ -33,7 +33,7 @@ const TXT = {
     a: "16 мая 1703 года заложили Петропавловскую крепость — это и есть дата основания Петербурга. 1700 — начало Северной войны: частая ловушка.",
     e4: "04 · на компьютере", h4: "Телефон, компьютер,\nрусский и английский",
     keys: ["1–5 разделы", "Enter — проверить", "RU / EN"],
-    free: "Бесплатно. Без App Store и Google Play.", url: "hundo-tau.vercel.app",
+    free: "Бесплатно. Без App Store и Google Play.", url: "hundo.online",
   },
   en: {
     hundo: "“Hundo” means a hundred: 100 points",
@@ -48,7 +48,7 @@ const TXT = {
     a: "The Peter and Paul Fortress was laid on 16 May 1703 — that's the founding date of St Petersburg. 1700 is when the Great Northern War began: a classic trap.",
     e4: "04 · on desktop", h4: "Phone, desktop,\nRussian and English",
     keys: ["1–5 sections", "Enter to check", "RU / EN"],
-    free: "Free. No App Store or Google Play.", url: "hundo-tau.vercel.app/en",
+    free: "Free. No App Store or Google Play.", url: "hundo.online/en",
   },
 };
 

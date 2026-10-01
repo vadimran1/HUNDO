@@ -4,7 +4,8 @@ import { ArrowRight } from "lucide-react";
 import { useApp, useUI } from "@/lib/store";
 import { subjName } from "@/lib/data";
 import { TASKS, localTask, type SubjectId } from "@/lib/tasks";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
+import { levelName } from "@/lib/diag";
 import { useT, isEn, pl, examLabel } from "@/lib/i18n";
 import { shake } from "@/lib/fx";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,7 @@ export function weakTopics(s: { answered: Record<string, boolean>; weakAI: { sub
 
 export function StatsScreen() {
   const state = useApp();
-  const { stats, subjects, streak, exam, resetStats } = state;
+  const { stats, subjects, streak, exam, resetStats, diag } = state;
   const askInChat = useUI(s => s.askInChat);
   const [confirm, setConfirm] = useState(false);
   let done = 0, correct = 0;
@@ -75,6 +76,26 @@ export function StatsScreen() {
       )) : <p className="text-[13px] text-fg-2">{t("Ошибок пока нет. Решите несколько заданий — сюда попадут темы, где вы сбились.", "No mistakes yet. Solve a few tasks — topics you slip on will appear here.")}</p>}
       </div>
       </div>
+
+      <Section>{t("Уровень по диагностике", "Diagnostic level")}</Section>
+      {diag ? (
+        <>
+          <div className="flex flex-wrap gap-2">
+            {(Object.entries(diag.subjects) as [SubjectId, NonNullable<typeof diag.subjects[SubjectId]>][]).map(([id, s]) => (
+              <span key={id} className="inline-flex items-center gap-2 rounded-full border border-line px-3 py-1.5 text-[13px] font-semibold">
+                {subjName(id)} <span className="font-normal text-fg-3">{levelName(s.level)} · {s.correct}/{s.total}</span>
+              </span>
+            ))}
+          </div>
+          <p className="mt-2.5 text-[12.5px] text-fg-3">{t(`Пройдена ${formatDate(diag.date)}. Варианты от ИИ, тренажёр и план учитывают эти результаты.`, `Taken on ${formatDate(diag.date)}. AI mock exams, the trainer and your plan use these results.`)}</p>
+          <Button variant="secondary" size="sm" className="mt-3" onClick={() => useUI.setState({ overlay: "diag" })}>{t("Пройти заново", "Retake")} <ArrowRight /></Button>
+        </>
+      ) : (
+        <>
+          <p className="text-[13px] text-fg-2">{t("Короткий тест покажет уровень по каждому предмету и слабые темы — под них подстроятся варианты.", "A short test shows your level in each subject and your weak topics — mock exams then adapt to them.")}</p>
+          <Button size="sm" className="mt-3" onClick={() => useUI.setState({ overlay: "diag" })}>{t("Пройти диагностику", "Take the diagnostic")} <ArrowRight /></Button>
+        </>
+      )}
 
       <Section>{t("Сброс", "Reset")}</Section>
       <Button variant="outline" onClick={e => {
