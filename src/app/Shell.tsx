@@ -30,11 +30,37 @@ export function useDesktop() {
   return on;
 }
 
+/**
+ * Логотип. Секрет: 5 быстрых нажатий подряд открывают «Звуковой канал» —
+ * передачу картинок звуком. После третьего нажатия появляется подсказка, сколько осталось.
+ */
+const TAPS = 5;
+let taps = 0, lastTap = 0;
 function Logo() {
+  const [left, setLeft] = useState(0);
+  const t = useT();
+  const tap = () => {
+    const now = Date.now();
+    taps = now - lastTap < 700 ? taps + 1 : 1;
+    lastTap = now;
+    if (taps >= TAPS) { taps = 0; setLeft(0); navigator.vibrate?.(30); useUI.setState({ overlay: "sound" }); return; }
+    setLeft(taps >= 3 ? TAPS - taps : 0);
+    setTimeout(() => { if (Date.now() - lastTap >= 690) setLeft(0); }, 700);
+  };
   return (
-    <p className="m-0 flex items-center gap-2 font-display text-[15px] font-black tracking-[.06em]">
-      <i className="inline-block size-2 bg-accent transition-colors duration-500" />HUNDO
-    </p>
+    <span className="relative">
+      <button type="button" onClick={tap} className="m-0 flex cursor-default items-center gap-2 font-display text-[15px] font-black tracking-[.06em] select-none [-webkit-tap-highlight-color:transparent]">
+        <i className="inline-block size-2 bg-accent transition-colors duration-500" />HUNDO
+      </button>
+      <AnimatePresence>
+        {left > 0 && (
+          <motion.span key={left} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="pointer-events-none absolute top-full left-0 mt-1 rounded-md bg-fg px-2 py-1 font-mono text-[11px] whitespace-nowrap text-bg">
+            {t(`ещё ${left}…`, `${left} more…`)}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </span>
   );
 }
 

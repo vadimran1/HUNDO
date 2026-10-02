@@ -112,8 +112,8 @@ export type SheetId = "settings" | "about" | "paste" | "plan" | "sources" | "acc
 
 export const useUI = create<{
   tab: Tab; dir: number; sheet: SheetId; pendingChat: Pending | null; onbStep: number; trainMode: "tasks" | "cards";
-  /** экран поверх вкладок: диагностика уровня */
-  overlay: "diag" | null;
+  /** экран поверх вкладок: диагностика уровня или секретный «Звуковой канал» */
+  overlay: "diag" | "sound" | null;
   /** предмет, который Варианты выберут по умолчанию (после диагностики — самый слабый) */
   variantSubj: SubjectId | null;
   go: (t: Tab) => void; openSheet: (s: SheetId) => void; askInChat: (text: string, image?: string, thumb?: string, display?: string) => void;

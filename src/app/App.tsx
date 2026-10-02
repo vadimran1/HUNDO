@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
 import { Diagnostic } from "./screens/Diagnostic";
+import { lazy, Suspense } from "react";
+const SoundLinkLazy = lazy(() => import("./screens/SoundLink").then(m => ({ default: m.SoundLink })));
+const SoundLink = () => <Suspense fallback={null}><SoundLinkLazy /></Suspense>;
 import { useApp, useUI, type Tab } from "@/lib/store";
 import { checkServer } from "@/lib/ai";
 import { applyLook } from "@/lib/fx";
@@ -69,7 +72,8 @@ export function App() {
           <TabBar />
         </>
       )}
-      <AnimatePresence>{onboarded && overlay === "diag" && <Diagnostic />}</AnimatePresence>
+      <AnimatePresence>{onboarded && overlay === "diag" && <Diagnostic key="diag" />}</AnimatePresence>
+      <AnimatePresence>{overlay === "sound" && <SoundLink key="sound" />}</AnimatePresence>
       <SheetHost />
       <UpdateToast />
     </MotionConfig>
