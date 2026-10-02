@@ -12,6 +12,7 @@ import { levelName, personalBrief, weakestSubject } from "@/lib/diag";
 import { Button } from "@/components/ui/button";
 import { Chip, Label, Segmented, Switch, Verdict } from "@/components/ui/controls";
 import { NumberTicker } from "@/components/magicui/number-ticker";
+import { TaskText } from "@/components/TaskText";
 
 function variantPrompt(exam: string, subj: string, count: number, withOpen: boolean) {
   if (isEn()) return `Create a practice version of the Russian ${exam} ${examYear()} exam (${examLabel(exam)}) in the subject "${subjNameRu(subj)}" (${subjName(subj)}).
@@ -354,7 +355,7 @@ Return ONLY JSON: {"score": integer from 0 to ${t.max}, "feedback": "2–4 sente
             <span className="min-w-0 flex-1 font-mono text-[11.5px] tracking-[.08em] text-fg-3 uppercase">{t.topic}</span>
             {t.type === "open" && <span className="flex-none rounded-[5px] border border-accent px-[7px] py-[3px] font-mono text-[11.5px] tracking-[.06em] uppercase">{tr("часть 2", "part 2")} · {t.max} {tr("б.", "pts")}</span>}
           </div>
-          <p className="mb-3.5 text-base leading-[1.55] break-words whitespace-pre-wrap lg:text-[17px]">{prettyMath(t.q)}</p>
+          <TaskText text={prettyMath(t.q)} className="mb-3.5 text-base leading-[1.55] break-words lg:text-[17px]" />
           {t.type === "open"
             ? <textarea className="field" rows={5} placeholder={tr("Развёрнутый ответ", "Extended answer")} disabled={v.done} value={v.given[t.n] || ""} onChange={e => setGiven(t.n, e.target.value)} />
             : <input className="cells" style={cellStyle((v.given[t.n] || "").length)} placeholder={tr("Ответ", "Answer")} autoComplete="off" autoCapitalize="off" spellCheck={false} disabled={v.done} value={v.given[t.n] || ""} onChange={e => setGiven(t.n, e.target.value)} />}

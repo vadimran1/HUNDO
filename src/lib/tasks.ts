@@ -3,8 +3,9 @@
 // answers — все допустимые варианты записи ответа (регистр и пробелы не важны).
 
 import { TASKS_EXTRA, EN_EXTRA } from "./tasks-extra";
+import { TASKS_INF, EN_INF } from "./tasks-inf";
 
-export type SubjectId = "rus" | "math" | "hist" | "soc" | "bio" | "chem" | "phys";
+export type SubjectId = "rus" | "math" | "hist" | "soc" | "bio" | "chem" | "phys" | "inf";
 export type Task = { id: string; subj: SubjectId; topic: string; q: string; answers: string[]; exp: string };
 
 const TASKS_BASE: Task[] = [
@@ -91,8 +92,8 @@ const TASKS_BASE: Task[] = [
    exp:"Здесь это производный предлог: пишется слитно и с е на конце, заменяется на «из-за». Существительное «в следствии» пишется раздельно — «в следствии по делу»."},
 ];
 
-/** Весь банк: базовые задания + дополнительные (tasks-extra.ts) */
-export const TASKS: Task[] = [...TASKS_BASE, ...TASKS_EXTRA];
+/** Весь банк: базовые задания + дополнительные (tasks-extra.ts) + информатика (tasks-inf.ts) */
+export const TASKS: Task[] = [...TASKS_BASE, ...TASKS_EXTRA, ...TASKS_INF];
 
 // ---------- Английская версия заданий ----------
 // Для английского интерфейса: тема, условие, разбор и дополнительные варианты ответа.
@@ -159,7 +160,7 @@ const EN: Record<string, TaskEn> = {
 
 /** Задание на текущем языке. В английском принимаются ответы на обоих языках. */
 export function localTask(t: Task, en: boolean): Task {
-  const e = en ? (EN[t.id] || EN_EXTRA[t.id]) : undefined;
+  const e = en ? (EN[t.id] || EN_EXTRA[t.id] || EN_INF[t.id]) : undefined;
   if (!e) return t;
   return { ...t, topic: e.topic, q: e.q, exp: e.exp, answers: [...t.answers, ...(e.answers || [])] };
 }

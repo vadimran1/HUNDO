@@ -10,6 +10,7 @@ import { cellStyle, cn, isCorrect } from "@/lib/utils";
 import { shake } from "@/lib/fx";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/controls";
+import { TaskText } from "@/components/TaskText";
 
 /**
  * Диагностика знаний: по 3–5 коротких заданий на каждый предмет ученика.
@@ -125,7 +126,7 @@ function Question({ task: raw, onAnswer }: { task: Task; onAnswer: (t: Task, ok:
       <div className="mb-3.5 flex flex-wrap items-center gap-2 font-mono text-[12px] tracking-[.08em] text-fg-3 uppercase">
         <b className="font-bold text-fg">{subjName(task.subj)}</b><span className="h-px w-3.5 bg-line-2" /><span>{task.topic}</span>
       </div>
-      <p className="mb-5 text-[19px] leading-[1.45] font-medium text-pretty lg:text-[23px]">{task.q}</p>
+      <TaskText text={task.q} className="mb-5 text-[19px] leading-[1.45] font-medium text-pretty lg:text-[23px]" />
       <label className="mb-3 block">
         <Label>{t("Ответ", "Answer")}</Label>
         <input ref={input} className="cells" style={cellStyle(given.length)} value={given} autoComplete="off" autoCapitalize="off" spellCheck={false}

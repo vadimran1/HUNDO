@@ -12,6 +12,7 @@ import { burst, shake } from "@/lib/fx";
 import { cellStyle, isCorrect, prettyMath } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Label, Segmented, Typing, Verdict } from "@/components/ui/controls";
+import { TaskText } from "@/components/TaskText";
 
 function pick(subjects: string[], answered: Record<string, boolean>, skip?: string): Task {
   const set = new Set(subjects);
@@ -110,7 +111,7 @@ Briefly explain why the correct answer is what it is. If the student was wrong, 
           <span className="flex-1" />
           <span>{st.correct}/{st.done}</span>
         </div>
-        <p className="mb-5 text-[19px] leading-[1.45] lg:text-[24px] lg:leading-[1.4] font-medium tracking-[-.005em] text-pretty">{task.q}</p>
+        <TaskText text={task.q} className="mb-5 text-[19px] leading-[1.45] lg:text-[24px] lg:leading-[1.4] font-medium tracking-[-.005em] text-pretty" />
 
         <label className="mb-3 block">
           <Label>{t("Ответ", "Answer")}</Label>

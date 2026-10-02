@@ -214,12 +214,12 @@ function AboutSheet() {
   const features: [string, string][] = [
     [t("Варианты от ИИ", "AI mock exams"), t("5–15 заданий в формате ФИПИ, проверка и оценка части 2 по критериям", "5–15 tasks in the FIPI format, auto-marking and Part 2 graded against criteria")],
     [t("Разбор любого задания", "Explain any task"), t("вставил условие — получил решение по шагам", "paste a task, get a step-by-step solution")],
-    [t("Тренажёр", "Practice"), t("76 заданий с разборами, поле ответа как в бланке", "76 tasks with solutions and an answer field like the real form")],
+    [t("Тренажёр", "Practice"), t("92 задания с разборами, поле ответа как в бланке", "92 tasks with solutions and an answer field like the real form")],
     [t("Прогресс", "Progress"), t("точность по предметам, серия дней, темы на повторение", "accuracy by subject, day streak, topics to review")],
     [t("План подготовки", "Study plan"), t("персональный план по неделям до даты экзамена", "a personal week-by-week plan up to the exam date")],
     [t("Фото задания", "Photo of a task"), t("сфотографировал задачу из учебника — ИИ переписал условие и решил по шагам", "snap a task from a textbook — the AI transcribes and solves it step by step")],
     [t("Режим экзамена", "Exam mode"), t("таймер, автосдача по окончании времени, примерный тестовый балл", "a timer, automatic hand-in when time is up, an estimated test score")],
-    [t("Карточки", "Flashcards"), t("98 карточек: даты, термины, формулы; интервальное повторение", "98 cards: dates, terms, formulas; spaced repetition")],
+    [t("Карточки", "Flashcards"), t("112 карточек: даты, термины, формулы; интервальное повторение", "112 cards: dates, terms, formulas; spaced repetition")],
     [t("Напоминания", "Reminders"), t("push-уведомление, если 2 дня не занимался", "a push notification if you skip 2 days")],
     [t("Два языка и компьютер", "Two languages and desktop"), t("русский и английский интерфейс, отдельная раскладка для ПК", "Russian and English interface, a dedicated desktop layout")],
   ];

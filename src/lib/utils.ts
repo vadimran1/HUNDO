@@ -63,7 +63,9 @@ export function prettyMath(s: string) {
   if (!s || !/[$\\^]/.test(s)) return s;
   return s
     .replace(/\\\(|\\\)|\\\[|\\\]/g, "")
-    .replace(/\$+/g, "")
+    // $ убираем, но не в ссылках электронных таблиц: $A$1, $A1, B$1
+    .replace(/\$+/g, (m: string, i: number, str: string) =>
+      /^[A-Z]{1,3}\$?\d/.test(str.slice(i + m.length)) || (/[A-Z]$/.test(str.slice(0, i)) && /^\d/.test(str.slice(i + m.length))) ? m : "")
     .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, a: string, b: string) => {
       const simple = (x: string) => /^[\p{L}\d.,]+$/u.test(x.trim());
       return `${simple(a) ? a.trim() : `(${a})`}/${simple(b) ? b.trim() : `(${b})`}`;
@@ -75,5 +77,5 @@ export function prettyMath(s: string) {
     .replace(/\\text\{([^{}]*)\}/g, "$1").replace(/\\(left|right)/g, "")
     .replace(/\^\{([0-9n-]+)\}|\^([0-9n])/g, (_, a, b) => [...(a || b)].map(ch => SUP[ch] || ch).join(""))
     .replace(/_\{([^{}]*)\}/g, "$1")
-    .replace(/\\,|\;|\\!/g, " ");
+    .replace(/\\,|\\;|\\!/g, " ");
 }

@@ -17,6 +17,7 @@ const SUBJ_DATA: { id: SubjectId; ru: string; ruShort: string; en: string; enSho
   { id: "bio", ru: "Биология", ruShort: "Биология", en: "Biology", enShort: "Biology" },
   { id: "chem", ru: "Химия", ruShort: "Химия", en: "Chemistry", enShort: "Chemistry" },
   { id: "phys", ru: "Физика", ruShort: "Физика", en: "Physics", enShort: "Physics" },
+  { id: "inf", ru: "Информатика", ruShort: "Информатика", en: "Computer science", enShort: "CS" },
 ];
 /** Предметы на текущем языке (вызывать при отрисовке, а не один раз при загрузке) */
 export const subjects = () => SUBJ_DATA.map(s => ({ id: s.id, name: isEn() ? s.en : s.ru, short: isEn() ? s.enShort : s.ruShort }));
