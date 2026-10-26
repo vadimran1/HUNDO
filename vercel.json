@@ -15,12 +15,30 @@
     {
       "source": "/en/",
       "destination": "/index.html"
+    },
+    {
+      "source": "/giftbot/",
+      "destination": "/api/gb?p=/"
+    },
+    {
+      "source": "/giftbot/:path*",
+      "destination": "/api/gb?p=/:path*"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/giftbot",
+      "destination": "/giftbot/",
+      "permanent": false
     }
   ],
   "functions": {
     "api/chat.js": {
       "maxDuration": 60,
       "supportsCancellation": true
+    },
+    "api/gb.js": {
+      "maxDuration": 30
     }
   },
   "headers": [
