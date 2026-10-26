@@ -25,8 +25,12 @@ const TCP_URL = (() => {
   return /^rediss?:\/\//.test(u) ? u : "";
 })();
 
-export const hasRedis = Boolean((REST_URL && REST_TOKEN) || TCP_URL);
-export const redisKind = REST_URL && REST_TOKEN ? "upstash-rest" : TCP_URL ? "redis-tcp" : "";
+// REST используем только если адрес — настоящая https-ссылка: иначе (например, в переменную попал мусор)
+// берём обычный REDIS_URL, чтобы одна неверная переменная не роняла базу целиком.
+const REST_OK = /^https:\/\/\S+$/.test(REST_URL) && Boolean(REST_TOKEN);
+
+export const hasRedis = Boolean(REST_OK || TCP_URL);
+export const redisKind = REST_OK ? "upstash-rest" : TCP_URL ? "redis-tcp" : "";
 
 /** Названия (не значения!) переменных, похожих на ключи базы — для подсказки, если что-то не так */
 export const redisEnvNames = () => Object.keys(env).filter(n => /REDIS|KV_|UPSTASH/i.test(n)).sort();
@@ -44,7 +48,7 @@ async function tcpClient(){
 export async function redis(...cmd){
   if(!hasRedis) throw new Error("База данных не подключена");
   const args = cmd.map(String);
-  if(REST_URL && REST_TOKEN){
+  if(REST_OK){
     const r = await fetch(REST_URL, {
       method:"POST",
       headers:{authorization:"Bearer " + REST_TOKEN, "content-type":"application/json"},
